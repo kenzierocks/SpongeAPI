@@ -27,17 +27,15 @@ package org.spongepowered.api.text;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.reflect.TypeToken;
 import ninja.leaping.configurate.objectmapping.Setting;
 import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
-import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
 import org.spongepowered.api.text.format.TextColor;
 import org.spongepowered.api.text.format.TextFormat;
 import org.spongepowered.api.text.format.TextStyle;
-import org.spongepowered.api.text.serializer.TextTemplateConfigSerializer;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -56,17 +54,15 @@ import javax.annotation.Nullable;
  */
 public final class TextTemplate implements TextRepresentable, Iterable<Object> {
 
-    static {
-        TypeSerializers.getDefaultSerializers().registerType(TypeToken.of(TextTemplate.class), new TextTemplateConfigSerializer());
-    }
-
     /**
-     * Default "open" String for how arguments are contained within the template.
+     * Default "open" String for how arguments are contained within the
+     * template.
      */
     public static final String DEFAULT_OPEN_ARG = "{";
 
     /**
-     * Default "close" String for how arguments are contained within the template.
+     * Default "close" String for how arguments are contained within the
+     * template.
      */
     public static final String DEFAULT_CLOSE_ARG = "}";
 
@@ -219,17 +215,6 @@ public final class TextTemplate implements TextRepresentable, Iterable<Object> {
         return builder;
     }
 
-    private Text.Builder applyArg(Object param, Arg arg, @Nullable Text.Builder builder) {
-        if (builder == null) {
-            builder = Text.builder();
-        }
-        // wrap the parameter in the argument format
-        Text.Builder wrapper = Text.builder().format(arg.format);
-        apply(param, wrapper);
-        builder.append(wrapper.build());
-        return builder;
-    }
-
     private Text.Builder apply(Object element, @Nullable Text.Builder builder) {
         if (element instanceof Text) {
             Text text = (Text) element;
@@ -251,6 +236,17 @@ public final class TextTemplate implements TextRepresentable, Iterable<Object> {
                 builder.append(Text.of(str));
             }
         }
+        return builder;
+    }
+
+    private Text.Builder applyArg(Object param, Arg arg, @Nullable Text.Builder builder) {
+        if (builder == null) {
+            builder = Text.builder();
+        }
+        // wrap the parameter in the argument format
+        Text.Builder wrapper = Text.builder().format(arg.format);
+        apply(param, wrapper);
+        builder.append(wrapper.build());
         return builder;
     }
 
@@ -348,7 +344,7 @@ public final class TextTemplate implements TextRepresentable, Iterable<Object> {
 
     @Override
     public String toString() {
-        return Objects.toStringHelper(this)
+        return MoreObjects.toStringHelper(this)
                 .add("elements", this.elements)
                 .add("arguments", this.arguments)
                 .add("text", this.text)
@@ -378,7 +374,7 @@ public final class TextTemplate implements TextRepresentable, Iterable<Object> {
      * replaced by parameters in {@link #apply(Map)}.
      */
     @ConfigSerializable
-    public final static class Arg implements TextRepresentable {
+    public static final class Arg implements TextRepresentable {
 
         @Setting final boolean optional;
         @Setting @Nullable final Text defaultValue;
@@ -475,7 +471,7 @@ public final class TextTemplate implements TextRepresentable, Iterable<Object> {
 
         @Override
         public String toString() {
-            return Objects.toStringHelper(this)
+            return MoreObjects.toStringHelper(this)
                     .omitNullValues()
                     .add("optional", this.optional)
                     .add("defaultValue", this.defaultValue)
@@ -599,7 +595,7 @@ public final class TextTemplate implements TextRepresentable, Iterable<Object> {
 
             @Override
             public String toString() {
-                return Objects.toStringHelper(this)
+                return MoreObjects.toStringHelper(this)
                         .omitNullValues()
                         .add("name", this.name)
                         .add("optional", this.optional)

@@ -24,6 +24,7 @@
  */
 package org.spongepowered.api.text.title;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import org.spongepowered.api.text.Text;
 
@@ -42,11 +43,12 @@ import javax.annotation.Nullable;
 public final class Title {
 
     public static final Title EMPTY = new Title();
-    public static final Title CLEAR = new Title(null, null, null, null, null, true, false);
-    public static final Title RESET = new Title(null, null, null, null, null, false, true);
+    public static final Title CLEAR = new Title(null, null, null, null, null, null, true, false);
+    public static final Title RESET = new Title(null, null, null, null, null, null, false, true);
 
     final Optional<Text> title;
     final Optional<Text> subtitle;
+    final Optional<Text> actionBar;
     final Optional<Integer> fadeIn;
     final Optional<Integer> stay;
     final Optional<Integer> fadeOut;
@@ -54,7 +56,7 @@ public final class Title {
     final boolean reset;
 
     private Title() {
-        this(null, null, null, null, null, false, false);
+        this(null, null, null, null, null, null, false, false);
     }
 
     /**
@@ -62,6 +64,8 @@ public final class Title {
      *
      * @param title The main title of the title, or {@code null} for default
      * @param subtitle The subtitle of the title, or {@code null} for default
+     * @param actionBar The action bar text of the title, or {@code null} for
+     *     default
      * @param fadeIn The fade in time of the title, or {@code null} for default
      * @param stay The stay time of the title, or {@code null} for default
      * @param fadeOut The fade out time of the title, or {@code null} for
@@ -71,10 +75,11 @@ public final class Title {
      * @param reset {@code true} if this title resets all settings to default
      *        first
      */
-    Title(@Nullable Text title, @Nullable Text subtitle, @Nullable Integer fadeIn, @Nullable Integer stay, @Nullable Integer fadeOut,
-            boolean clear, boolean reset) {
+    Title(@Nullable Text title, @Nullable Text subtitle, @Nullable Text actionBar, @Nullable Integer fadeIn, @Nullable Integer stay,
+            @Nullable Integer fadeOut, boolean clear, boolean reset) {
         this.title = Optional.ofNullable(title);
         this.subtitle = Optional.ofNullable(subtitle);
+        this.actionBar = Optional.ofNullable(actionBar);
         this.fadeIn = Optional.ofNullable(fadeIn);
         this.stay = Optional.ofNullable(stay);
         this.fadeOut = Optional.ofNullable(fadeOut);
@@ -87,7 +92,7 @@ public final class Title {
      *
      * @return The {@link Text} of the title, if it was configured
      */
-    public final Optional<Text> getTitle() {
+    public Optional<Text> getTitle() {
         return this.title;
     }
 
@@ -96,8 +101,17 @@ public final class Title {
      *
      * @return The {@link Text} of the subtitle, if it was configured
      */
-    public final Optional<Text> getSubtitle() {
+    public Optional<Text> getSubtitle() {
         return this.subtitle;
+    }
+
+    /**
+     * Returns the action bar text of this title configuration.
+     *
+     * @return The {@link Text} of the action bar, if it was configured
+     */
+    public Optional<Text> getActionBar() {
+        return this.actionBar;
     }
 
     /**
@@ -109,7 +123,7 @@ public final class Title {
      *
      * @return The amount of ticks (1/20 second) for the fade in effect
      */
-    public final Optional<Integer> getFadeIn() {
+    public Optional<Integer> getFadeIn() {
         return this.fadeIn;
     }
 
@@ -122,7 +136,7 @@ public final class Title {
      *
      * @return The amount of ticks (1/20 second) for the stay effect
      */
-    public final Optional<Integer> getStay() {
+    public Optional<Integer> getStay() {
         return this.stay;
     }
 
@@ -133,7 +147,7 @@ public final class Title {
      *
      * @return The amount of ticks (1/20 second) for the fade out effect
      */
-    public final Optional<Integer> getFadeOut() {
+    public Optional<Integer> getFadeOut() {
         return this.fadeOut;
     }
 
@@ -144,7 +158,7 @@ public final class Title {
      * @return True if the current title will be removed from the client's
      *         screen
      */
-    public final boolean isClear() {
+    public boolean isClear() {
         return this.clear;
     }
 
@@ -157,7 +171,7 @@ public final class Title {
      *
      * @return True if the current settings will be reset to the defaults
      */
-    public final boolean isReset() {
+    public boolean isReset() {
         return this.reset;
     }
 
@@ -182,6 +196,7 @@ public final class Title {
         Title that = (Title) o;
         return this.title.equals(that.title)
                 && this.subtitle.equals(that.subtitle)
+                && this.actionBar.equals(that.actionBar)
                 && this.fadeIn.equals(that.fadeIn)
                 && this.stay.equals(that.stay)
                 && this.fadeOut.equals(that.fadeOut)
@@ -191,15 +206,16 @@ public final class Title {
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(this.title, this.subtitle, this.fadeIn, this.stay, this.fadeOut, this.clear, this.reset);
+        return Objects.hashCode(this.title, this.subtitle, this.actionBar, this.fadeIn, this.stay, this.fadeOut, this.clear, this.reset);
     }
 
     @Override
     public String toString() {
-        return Objects.toStringHelper(this)
+        return MoreObjects.toStringHelper(this)
                 .omitNullValues()
                 .add("title", this.title.orElse(null))
                 .add("subtitle", this.subtitle.orElse(null))
+                .add("actionBar", this.actionBar.orElse(null))
                 .add("fadeIn", this.fadeIn.orElse(null))
                 .add("stay", this.stay.orElse(null))
                 .add("fadeOut", this.fadeOut.orElse(null))
@@ -218,6 +234,7 @@ public final class Title {
 
         @Nullable private Text title;
         @Nullable private Text subtitle;
+        @Nullable private Text actionBar;
         @Nullable private Integer fadeIn;
         @Nullable private Integer stay;
         @Nullable private Integer fadeOut;
@@ -239,6 +256,7 @@ public final class Title {
         Builder(Title title) {
             this.title = title.title.orElse(null);
             this.subtitle = title.subtitle.orElse(null);
+            this.actionBar = title.actionBar.orElse(null);
             this.fadeIn = title.fadeIn.orElse(null);
             this.stay = title.stay.orElse(null);
             this.fadeOut = title.fadeOut.orElse(null);
@@ -252,7 +270,7 @@ public final class Title {
          * @return The current main title, or {@link Optional#empty()} if none
          * @see Title#getTitle()
          */
-        public final Optional<Text> getTitle() {
+        public Optional<Text> getTitle() {
             return Optional.ofNullable(this.title);
         }
 
@@ -274,7 +292,7 @@ public final class Title {
          * @return The current subtitle, or {@link Optional#empty()} if none
          * @see Title#getSubtitle()
          */
-        public final Optional<Text> getSubtitle() {
+        public Optional<Text> getSubtitle() {
             return Optional.ofNullable(this.subtitle);
         }
 
@@ -292,12 +310,35 @@ public final class Title {
         }
 
         /**
+         * Returns the current action bar text of this builder.
+         *
+         * @return The current action bar text, or {@link Optional#empty()} if none
+         * @see Title#getActionBar()
+         */
+        public Optional<Text> getActionBar() {
+            return Optional.ofNullable(this.actionBar);
+        }
+
+        /**
+         * Sets the action bar text to send to the player.
+         *
+         * @param actionBar The text to use for the action bar, or {@code null}
+         *     to reset
+         * @return This title builder
+         * @see Title#getActionBar()
+         */
+        public Builder actionBar(@Nullable Text actionBar) {
+            this.actionBar = actionBar;
+            return this;
+        }
+
+        /**
          * Returns the current fade in effect time of the title.
          *
          * @return The current fade in time, or {@link Optional#empty()} if none
          * @see Title#getFadeIn()
          */
-        public final Optional<Integer> getFadeIn() {
+        public Optional<Integer> getFadeIn() {
             return Optional.ofNullable(this.fadeIn);
         }
 
@@ -324,7 +365,7 @@ public final class Title {
          * @return The current stay time, or {@link Optional#empty()} if none
          * @see Title#getStay()
          */
-        public final Optional<Integer> getStay() {
+        public Optional<Integer> getStay() {
             return Optional.ofNullable(this.stay);
         }
 
@@ -352,7 +393,7 @@ public final class Title {
          *         none
          * @see Title#getFadeOut()
          */
-        public final Optional<Integer> getFadeOut() {
+        public Optional<Integer> getFadeOut() {
             return Optional.ofNullable(this.fadeOut);
         }
 
@@ -377,7 +418,7 @@ public final class Title {
          * @return {@code true} if the title will clear
          * @see Title#isClear()
          */
-        public final boolean isClear() {
+        public boolean isClear() {
             return this.clear;
         }
 
@@ -415,7 +456,7 @@ public final class Title {
          * @return {@code true} if the title will reset
          * @see Title#isReset()
          */
-        public final boolean isReset() {
+        public boolean isReset() {
             return this.reset;
         }
 
@@ -459,7 +500,12 @@ public final class Title {
         public Title build() {
             // If the title has no other properties and is either empty, just clears
             // or just resets we can return a special instance
-            if (this.title == null && this.subtitle == null && this.fadeIn == null && this.stay == null && this.fadeOut == null) {
+            if (this.title == null
+                && this.subtitle == null
+                && this.actionBar == null
+                && this.fadeIn == null
+                && this.stay == null
+                && this.fadeOut == null) {
                 if (this.clear) {
                     if (!this.reset) {
                         return CLEAR;
@@ -472,7 +518,7 @@ public final class Title {
             }
 
             return new Title(
-                    this.title, this.subtitle,
+                    this.title, this.subtitle, this.actionBar,
                     this.fadeIn, this.stay, this.fadeOut,
                     this.clear, this.reset);
         }
@@ -489,6 +535,7 @@ public final class Title {
             Builder that = (Builder) o;
             return Objects.equal(this.title, that.title)
                     && Objects.equal(this.subtitle, that.subtitle)
+                    && Objects.equal(this.actionBar, that.actionBar)
                     && Objects.equal(this.fadeIn, that.fadeIn)
                     && Objects.equal(this.stay, that.stay)
                     && Objects.equal(this.fadeOut, that.fadeOut)
@@ -498,15 +545,16 @@ public final class Title {
 
         @Override
         public int hashCode() {
-            return Objects.hashCode(this.title, this.subtitle, this.fadeIn, this.stay, this.fadeOut, this.clear, this.reset);
+            return Objects.hashCode(this.title, this.subtitle, this.actionBar, this.fadeIn, this.stay, this.fadeOut, this.clear, this.reset);
         }
 
         @Override
         public String toString() {
-            return Objects.toStringHelper(this)
+            return MoreObjects.toStringHelper(this)
                     .omitNullValues()
                     .add("title", this.title)
                     .add("subtitle", this.subtitle)
+                    .add("actionBar", this.actionBar)
                     .add("fadeIn", this.fadeIn)
                     .add("stay", this.stay)
                     .add("fadeOut", this.fadeOut)

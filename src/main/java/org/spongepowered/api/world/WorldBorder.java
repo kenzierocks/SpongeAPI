@@ -25,13 +25,8 @@
 package org.spongepowered.api.world;
 
 import com.flowpowered.math.vector.Vector3d;
-import org.slf4j.Logger;
-import org.spongepowered.api.Game;
-import org.spongepowered.api.scheduler.Scheduler;
-import org.spongepowered.api.scheduler.Task;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.util.ResettableBuilder;
-
-import javax.annotation.Nullable;
 
 /**
  * A world border is a square boundary, extending through the entire y-axis.
@@ -46,7 +41,16 @@ import javax.annotation.Nullable;
 public interface WorldBorder {
 
     /**
-     * Get the diameter the world border is expanding or contracting to.
+     * Creates a new {@link Builder} instance for making {@link WorldBorder}s.
+     * 
+     * @return The builder
+     */
+    static Builder builder() {
+        return Sponge.getRegistry().createBuilder(Builder.class);
+    }
+
+    /**
+     * Gets the diameter the world border is expanding or contracting to.
      *
      * <p>This will return the same value as {@link #getDiameter} unless
      * {@link #getTimeRemaining} is greater than 0.</p>
@@ -56,7 +60,7 @@ public interface WorldBorder {
     double getNewDiameter();
 
     /**
-     * Get the diameter of the world border.
+     * Gets the diameter of the world border.
      *
      * <p>The returned diameter applies to the x and z axis. The world border
      * extends over the entire y-axis.</p>
@@ -66,7 +70,7 @@ public interface WorldBorder {
     double getDiameter();
 
     /**
-     * Set the diameter of the world border.
+     * Sets the diameter of the world border.
      *
      * <p>The specified diameter applies to the x and z axis. The world border
      * extends over the entire y-axis.</p>
@@ -76,7 +80,7 @@ public interface WorldBorder {
     void setDiameter(double diameter);
 
     /**
-     * Set the diameter of the world border, over the given period of time.
+     * Sets the diameter of the world border, over the given period of time.
      *
      * <p>The world border diameter increases/decrease linearly over the
      * specified time. The specified diameter applies to the x and z axis. The
@@ -88,7 +92,7 @@ public interface WorldBorder {
     void setDiameter(double diameter, long time);
 
     /**
-     * Set the starting diameter and the ending diameter of the world border,
+     * Sets the starting diameter and the ending diameter of the world border,
      * over the given period of time.
      *
      * <p>The world border diameter increases/diameter linearly over the
@@ -102,7 +106,7 @@ public interface WorldBorder {
     void setDiameter(double startDiameter, double endDiameter, long time);
 
     /**
-     * Get the time remaining until the world border stops expanding or
+     * Gets the time remaining until the world border stops expanding or
      * contracting.
      *
      * @return The time remaining, in milliseconds
@@ -110,7 +114,7 @@ public interface WorldBorder {
     long getTimeRemaining();
 
     /**
-     * Set the center of the world border.
+     * Sets the center of the world border.
      *
      * @param x The x-axis center of the world border
      * @param z The z-axis center of the world border
@@ -118,7 +122,7 @@ public interface WorldBorder {
     void setCenter(double x, double z);
 
     /**
-     * Get the center of the world border.
+     * Gets the center of the world border.
      *
      * <p>The returned position is three-dimensional. As the worldborder extends
      * over the entire y-axis, the returned position will always have a
@@ -129,7 +133,7 @@ public interface WorldBorder {
     Vector3d getCenter();
 
     /**
-     * Get the time when a contracting world border will warn a player for whom
+     * Gets the time when a contracting world border will warn a player for whom
      * the world border will reach in {@code time} seconds.
      *
      * <p>In Minecraft, the warning is displayed in the form of a reddish
@@ -140,7 +144,7 @@ public interface WorldBorder {
     int getWarningTime();
 
     /**
-     * Set the time when a contracting world border will warn a player for whom
+     * Sets the time when a contracting world border will warn a player for whom
      * the world border will reach in {@code time} seconds.
      *
      * <p>In Minecraft, the warning is displayed in the form of a reddish
@@ -151,7 +155,7 @@ public interface WorldBorder {
     void setWarningTime(int time);
 
     /**
-     * Get the distance when a contracting world border will warn a player for
+     * Gets the distance when a contracting world border will warn a player for
      * whom the world border is {@code distance} blocks away.
      *
      * <p>In Minecraft, the warning is displayed in the form of a reddish
@@ -162,7 +166,7 @@ public interface WorldBorder {
     int getWarningDistance();
 
     /**
-     * Set the distance when a contracting world border will warn a player for
+     * Sets the distance when a contracting world border will warn a player for
      * whom the world border is {@code distance} blocks away.
      *
      * <p>In Minecraft, the warning is displayed in the form of a reddish
@@ -173,7 +177,7 @@ public interface WorldBorder {
     void setWarningDistance(int distance);
 
     /**
-     * Get the distance a player may be outside the world border before taking
+     * Gets the distance a player may be outside the world border before taking
      * damage.
      *
      * @return The distance
@@ -181,7 +185,7 @@ public interface WorldBorder {
     double getDamageThreshold();
 
     /**
-     * Set the distance a player may be be outside the world border before
+     * Sets the distance a player may be be outside the world border before
      * taking damage.
      *
      * @param distance The distance
@@ -189,7 +193,7 @@ public interface WorldBorder {
     void setDamageThreshold(double distance);
 
     /**
-     * Get the damage done to a player per block per tick when outside the
+     * Gets the damage done to a player per block per tick when outside the
      * buffer.
      *
      * @return The damage amount
@@ -197,7 +201,7 @@ public interface WorldBorder {
     double getDamageAmount();
 
     /**
-     * Set the damage done to a player per block per tick when outside the
+     * Sets the damage done to a player per block per tick when outside the
      * buffer.
      *
      * @param damage The damage amount
@@ -214,97 +218,94 @@ public interface WorldBorder {
      * @return The builder for the chunk pre-generate task
      * @see ChunkPreGenerate
      */
-    ChunkPreGenerate newChunkPreGenerate(World world);
+    ChunkPreGenerate.Builder newChunkPreGenerate(World world);
 
     /**
-     * A builder for submitting a task to pre-generate chunks inside a world
-     * border.
-     *
-     * <p>The task is synchronous and repeating with a given interval and either
-     * a target number of chunks per ticks and/or a percentage of the tick
-     * time.</p>
-     *
-     * <p>Chunk order is not defined but a proper implementation should use and
-     * "inside-out" strategy for better results if the task is cancelled.</p>
-     *
-     * @see WorldBorder#newChunkPreGenerate(World)
-     * @see World#newChunkPreGenerate(Vector3d, double)
+     * Copies the properties of the passed border onto this border.
+     * 
+     * @param border The border whose properties are to be copied
      */
-    interface ChunkPreGenerate extends ResettableBuilder<Task, ChunkPreGenerate> {
-
-        /**n
-         * Sets the owner of the resulting task.
-         *
-         * <p>Mandatory.</p>
-         *
-         * @param plugin The owner plugin
-         * @return This for chained calls
-         */
-        ChunkPreGenerate owner(Object plugin);
-
-        /**
-         * Sets the logger for logging generator efforts.
-         *
-         * <p>Optional.</p>
-         *
-         * @param logger A logger for the generator
-         * @return This for chained calls
-         */
-        ChunkPreGenerate logger(@Nullable Logger logger);
-
-        /**
-         * Sets the interval between generation runs.
-         *
-         * <p>Must be greater than 0.</p>
-         *
-         * <p>Optional.</p>
-         *
-         * <p>Default is 10.</p>
-         *
-         * @param tickInterval The tick interval
-         * @return This for chained calls
-         */
-        ChunkPreGenerate tickInterval(int tickInterval);
-
-        /**
-         * Sets maximum number of chunks per tick to generate.
-         *
-         * <p>Use a value smaller or equal to 0 to disable.</p>
-         *
-         * <p>Optional if {@link #tickPercentLimit(float)} is used.</p>
-         *
-         * <p>Default is disabled.</p>
-         *
-         * @param chunkCount The maximum number of chunks to generate
-         * @return This for chained calls
-         */
-        ChunkPreGenerate chunksPerTick(int chunkCount);
-
-        /**
-         * Sets the limit of tick time that can be used to generate chunks as a
-         * percentage of {@link Scheduler#getPreferredTickInterval()}. The
-         * percentage should be a value in the range (0, 1]. No estimation is
-         * used to decide when to stop so the actual value will always be
-         * somewhere above the given percentage.
-         *
-         * <p>Use a value smaller or equal to 0 to disable.</p>
-         *
-         * <p>Optional if {@link #chunksPerTick(int)} is used.</p>
-         *
-         * <p>Default is 15%.</p>
-         *
-         * @param tickPercent The
-         * @return This for chained calls
-         */
-        ChunkPreGenerate tickPercentLimit(float tickPercent);
-
-        /**
-         * Schedules the task with the {@link Game#getScheduler()}.
-         *
-         * @return The resulting task
-         */
-        Task start();
-
+    default void copyPropertiesFrom(WorldBorder border) {
+        setCenter(border.getCenter().getX(), border.getCenter().getZ());
+        setDamageAmount(border.getDamageAmount());
+        setDamageThreshold(border.getDamageThreshold());
+        setDiameter(border.getDiameter(), border.getNewDiameter(), border.getTimeRemaining());
+        setWarningDistance(border.getWarningDistance());
+        setWarningTime(border.getWarningTime());
     }
 
+    interface Builder extends ResettableBuilder<WorldBorder, Builder> {
+
+        /**
+         * Copies the required data from the passed {@code WorldBorder}.
+         * 
+         * @param border The world border whose data is to be copied
+         * @return The builder, for chaining
+         */
+        @Override
+        Builder from(WorldBorder border);
+
+        /**
+         * Sets the diameter of this world border.
+         * 
+         * @param diameter The diameter that this border will have.
+         * @return The builder, for chaining.
+         * @see WorldBorder#setDiameter(double)
+         */
+        Builder diameter(double diameter);
+
+        /**
+         * Sets the centre of this world border.
+         * 
+         * @param x The x-coordinate of the new centre
+         * @param z The z-coordinate of the new centre
+         * @return The builder, for chaining
+         * @see WorldBorder#setCenter(double, double)
+         */
+        Builder center(double x, double z);
+
+        /**
+         * Sets the warning time of this world border.
+         * 
+         * @param time Warning time in seconds
+         * @return The builder, for chaining
+         * @see WorldBorder#setWarningTime(int)
+         */
+        Builder warningTime(int time);
+
+        /**
+         * Sets the warning distance of this world border.
+         * 
+         * @param distance The warning distance in blocks
+         * @return The builder, for chaining
+         * @see WorldBorder#setWarningDistance(int)
+         */
+        Builder warningDistance(int distance);
+
+        /**
+         * Sets the damage threshold of this world border.
+         * 
+         * @param distance The damage threshold in blocks
+         * @return The builder, for chaining
+         * @see WorldBorder#setDamageThreshold(double)
+         */
+        Builder damageThreshold(double distance);
+
+        /**
+         * Sets the damage amount of this world border.
+         * 
+         * @param damage The damage amount
+         * @return The builder, for chaining
+         * @see WorldBorder#setDamageAmount(double)
+         */
+        Builder damageAmount(double damage);
+        
+        /**
+         * Builds the world border from the information given. If no information
+         * is given, a {@code WorldBorder} with default properties is built.
+         * 
+         * @return The built world border
+         */
+        WorldBorder build();
+    }
 }

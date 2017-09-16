@@ -27,8 +27,8 @@ package org.spongepowered.api.data.property.entity;
 import org.spongepowered.api.data.Property;
 import org.spongepowered.api.data.manipulator.mutable.entity.DominantHandData;
 import org.spongepowered.api.data.property.AbstractProperty;
-import org.spongepowered.api.data.type.HandType;
-import org.spongepowered.api.data.type.HandTypes;
+import org.spongepowered.api.data.type.HandPreference;
+import org.spongepowered.api.data.type.HandPreferences;
 import org.spongepowered.api.entity.living.Living;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.util.Coerce;
@@ -36,7 +36,8 @@ import org.spongepowered.api.util.Coerce;
 import javax.annotation.Nullable;
 
 /**
- * Represents a {@link Property} for the dominant {@link HandType} of a {@link Player}.
+ * Represents a {@link Property} for the dominant {@link HandPreference} of a
+ * {@link Player}.
  *
  * <p>Handedness usually determines which hand is used for "main" interactions,
  * such as tool use or block breaking.</p>
@@ -44,19 +45,34 @@ import javax.annotation.Nullable;
  * <p><i>NOTE: </i> This only applies to {@link Player}s, for {@link Living}
  * entities see {@link DominantHandData}.</p>
  */
-public class DominantHandProperty extends AbstractProperty<String, HandType> {
+public class DominantHandProperty extends AbstractProperty<String, HandPreference> {
 
-    public DominantHandProperty(@Nullable HandType value) {
+    /**
+     * Creates a new {@link DominantHandProperty} with the provided
+     * {@link HandPreference} value.
+     *
+     * @param value The value
+     */
+    public DominantHandProperty(@Nullable HandPreference value) {
         super(value);
     }
 
-    public DominantHandProperty(@Nullable HandType value, @Nullable Operator op) {
+    /**
+     * Creates a new {@link DominantHandProperty} with the provided
+     * {@link HandPreference}
+     * and {@link org.spongepowered.api.data.Property.Operator} value.
+     *
+     * @param value The value
+     * @param op The operator for comparison
+     */
+    public DominantHandProperty(@Nullable HandPreference value, @Nullable Operator op) {
         super(value, op);
     }
 
     @Override
     public int compareTo(@Nullable Property<?, ?> o) {
-        HandType other = Coerce.toPseudoEnum(o == null ? null : o.getValue(), HandType.class, HandTypes.class, HandTypes.OFF_HAND);
+        HandPreference other = Coerce.toPseudoEnum(o == null ? null : o.getValue(), HandPreference.class, HandPreferences.class,
+                HandPreferences.RIGHT);
         return this.getValue().getId().compareTo(o == null ? "" : other.getId());
     }
 }

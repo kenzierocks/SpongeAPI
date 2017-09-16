@@ -25,26 +25,36 @@
 package org.spongepowered.api.item.inventory;
 
 import org.spongepowered.api.Nameable;
-import org.spongepowered.api.data.Property;
+import org.spongepowered.api.Sponge;
+import org.spongepowered.api.event.item.inventory.InteractInventoryEvent;
 import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.item.inventory.transaction.InventoryTransactionResult;
+import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.text.translation.Translation;
+import org.spongepowered.api.util.ResettableBuilder;
 
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Queue;
+import java.util.function.Consumer;
 
 /**
  * Base interface for queryable inventories.
- *
- * <p>TODO Flesh out javadoc from proposal document. For now, see proposal doc
- * here: https://github.com/SpongePowered/SpongeAPI/pull/443</p>
  */
 public interface Inventory extends Iterable<Inventory>, Nameable {
 
     /**
-     * Get the parent {@link Inventory} of this {@link Inventory}.
-     * 
+     * Creates a new {@link Inventory.Builder} to build an {@link Inventory}.
+     *
+     * @return The builder
+     */
+    static Inventory.Builder builder() {
+        return Sponge.getRegistry().createBuilder(Inventory.Builder.class);
+    }
+
+    /**
+     * Gets the parent {@link Inventory} of this {@link Inventory}.
+     *
      * @return the parent inventory, returns this inventory if there is no
      *      parent (this is a top-level inventory)
      */
@@ -87,7 +97,7 @@ public interface Inventory extends Iterable<Inventory>, Nameable {
     <T extends Inventory> T next();
 
     /**
-     * Get and remove the first available stack from this Inventory.
+     * Gets and remove the first available stack from this Inventory.
      *
      * <p>'Available' has a different meaning for different inventory types. In
      * a single-slot inventory this has a fixed implication. However larger and
@@ -142,7 +152,7 @@ public interface Inventory extends Iterable<Inventory>, Nameable {
     Optional<ItemStack> poll(int limit);
 
     /**
-     * Get without removing the first available stack from this Inventory. For
+     * Gets without removing the first available stack from this Inventory. For
      * the definition of 'available', see {@link #poll}.
      *
      * @return First available itemstack, or {@link Optional#empty()} if
@@ -251,33 +261,47 @@ public interface Inventory extends Iterable<Inventory>, Nameable {
     int capacity();
 
     /**
-     * Returns true if this Inventory contains no children. This does not imply
-     * that the Inventory accepts no items, and an Inventory is perfectly at
-     * liberty to provide {@link #peek}, {@link #poll}, {@link #offer} and
+     * Returns true if this Inventory contains children. If false, this does not
+     * imply that the Inventory accepts no items, and an Inventory is perfectly
+     * at liberty to provide {@link #peek}, {@link #poll}, {@link #offer} and
      * {@link #set} semantics even if it has no internal storage of its own.
      *
-     * @return true if and only if this inventory contains no child inventories
+     * @return true if and only if this inventory contains child inventories
      */
-    boolean isEmpty();
+    boolean hasChildren();
 
     /**
-     * Checks for whether the given stack is contained in this Inventory. This
-     * is equivalent to calling <code>!inv.query(stack).isEmpty();</code>
+     * Checks whether the stacks quantity or more of given stack is
+     * contained in this Inventory. This is equivalent to calling
+     * <code>!inv.query(stack).hasChildren();</code> To check if an
+     * inventory contains any amount use {@link #containsAny(ItemStack)}.
      *
      * @param stack The stack to check for
-     * @return True if the stack is present in this list
+     * @return True if there are at least the given stack's amount of items
+     *      present in this inventory.
      */
     boolean contains(ItemStack stack);
 
     /**
      * Checks for whether there is a stack in this Inventory with the given
      * ItemType. This is equivalent to calling <code>!inv.query(stack)
-     * .isEmpty();</code>
+     * .hasChildren();</code>
      *
      * @param type The type to search for
      * @return True if at least one stack in this list has the given type
      */
     boolean contains(ItemType type);
+
+    /**
+     * Checks whether the given stack is contained in this Inventory.
+     * The stack size is ignored. Note this will return true if any amount
+     * of the supplied stack is found. To check if an inventory contains at
+     * least an amount use {@link #contains(ItemStack)}.
+     *
+     * @param stack The stack to check for
+     * @return True if the stack is present in this inventory
+     */
+    boolean containsAny(ItemStack stack);
 
     /**
      * Returns the maximum size of any stack in this Inventory.
@@ -337,6 +361,19 @@ public interface Inventory extends Iterable<Inventory>, Nameable {
     <T extends InventoryProperty<?, ?>> Optional<T> getProperty(Inventory child, Class<T> property, Object key);
 
     /**
+     * Gets the property with the default key defined in <em>this</em>
+     * inventory for the specified (immediate) sub-inventory.
+     *
+     * @param child the child inventory to inspect
+     * @param property the type of property to query for
+     * @param <T> expected type of inventory property, generic to enable easy
+     *      pseudo-duck-typing
+     * @return matching properties, may be absent if no property matched the
+     *      supplied criteria
+     */
+    <T extends InventoryProperty<?, ?>> Optional<T> getInventoryProperty(Inventory child, Class<T> property);
+
+    /**
      * Gets a property with the specified key defined directly on this Inventory
      * if one is defined. For sub-inventories this is effectively the same as
      * <code>inv.getParent().getProperty(inv, property, key);</code> but for
@@ -351,6 +388,21 @@ public interface Inventory extends Iterable<Inventory>, Nameable {
      *      supplied criteria
      */
     <T extends InventoryProperty<?, ?>> Optional<T> getProperty(Class<T> property, Object key);
+
+    /**
+     * Gets a property with the default key defined directly on this Inventory
+     * if one is defined. For sub-inventories this is effectively the same as
+     * <code>inv.getParent().getProperty(inv, property);</code> but for
+     * top-level inventories may include properties defined on the inventory
+     * directly.
+     *
+     * @param property the type of property to query for
+     * @param <T> expected type of inventory property, generic to enable easy
+     *      pseudo-duck-typing
+     * @return matching properties, may be absent if no property matched the
+     *      supplied criteria
+     */
+    <T extends InventoryProperty<?, ?>> Optional<T> getInventoryProperty(Class<T> property);
 
     /**
      * Query this inventory for inventories matching any of the supplied types.
@@ -379,17 +431,16 @@ public interface Inventory extends Iterable<Inventory>, Nameable {
     <T extends Inventory> T query(ItemType... types);
 
     /**
-     * Query this inventory for inventories containing any stacks which match
-     * the supplied stack operands. This query operates directly on {@link Slot}
+     * Query this inventory for inventories containing stacks which match the
+     * supplied stack operand. This query operates directly on {@link Slot}
      * leaf nodes in the inventory and will always return a collection
-     * containing only {@link Slot} instances. Logical <code>OR</code> is
-     * applied between operands.
+     * containing only {@link Slot} instances.
+     * To query for stacks of any size use {@link #queryAny(ItemStack...)}.
      *
-     * @param types items to query for, the size of the stacks is ignored if the
-     *      stack size is set to -1, otherwise the stack sizes must match the
-     *      supplied stacks exactly
+     * @param types items to query for, stack sizes must match the supplied
+     *     stack exactly
      * @param <T> expected inventory type, specified as generic to allow easy
-     *      pseudo-duck-typing
+     *     pseudo-duck-typing
      * @return the query result
      */
     <T extends Inventory> T query(ItemStack... types);
@@ -451,4 +502,140 @@ public interface Inventory extends Iterable<Inventory>, Nameable {
      */
     <T extends Inventory> T query(Object... args);
 
+    /**
+     * Query this inventory for inventories containing any stacks which match
+     * the supplied stack operands ignoring its quantity. This query operates
+     * directly on {@link Slot} leaf nodes in the inventory and will always
+     * return a collection containing only {@link Slot} instances. Logical
+     * <code>OR</code> is applied between operands.
+     * This ignores stack sizes. To query for stacks of a specific size use
+     * {@link #query(ItemStack...)}.
+     *
+     * @param types items to query for, the size of the stacks is always ignored
+     * @param <T> expected inventory type, specified as generic to allow easy
+     *      pseudo-duck-typing
+     * @return the query result
+     */
+    <T extends Inventory> T queryAny(ItemStack... types);
+
+    /**
+     * Returns the {@link PluginContainer} who built this inventory.
+     *
+     * @return The container
+     */
+    PluginContainer getPlugin();
+
+    /**
+     * Creates an {@link InventoryArchetype} based on this {@link Inventory}.
+     *
+     * @return The inventory archetype
+     */
+    InventoryArchetype getArchetype();
+
+    /**
+     * Intersects the slots of both inventories.
+     * The resulting inventory will only contain slots
+     * that are present in both inventories.
+     *
+     * @param inventory the other inventory
+     * @return an inventory wrapping all slots that are present in both inventories
+     */
+    Inventory intersect(Inventory inventory);
+
+    /**
+     * Constructs a union of the slots in both inventories.
+     * The resulting inventory will contain all slots from both inventories.
+     * The slots of this inventory are ordered before the slots of the given inventory.
+     * If the same slot is contained in both inventories the duplicate in the second one is removed.
+     *
+     * @param inventory the other inventory
+     * @return an inventory wrapping all slots of both inventories.
+     */
+    Inventory union(Inventory inventory);
+
+    /**
+     * Returns true if the given inventory is a descendant of this one.
+     * This method will check for deeply nested inventories but
+     * will only return true if the entire inventory structure is contained.
+     * This means that e.g. for a query result of multiple slots the
+     * inventory will not return true even if all slots are contained.
+     * If you want to check if all slots of an inventory are contained in
+     * another one use {@link #intersect(Inventory)} instead.
+     * <p>
+     * You can use this if you want to check if a single Slot is contained
+     * in an inventory or an entire row is contained in a Grid.
+     * </p>
+     *
+     * @param inventory the other inventory
+     * @return whether the given inventory is contained in this one.
+     */
+    boolean containsInventory(Inventory inventory);
+
+    /**
+     * A Builder for Inventories based on {@link InventoryArchetype}s.
+     */
+    interface Builder extends ResettableBuilder<Inventory, Builder> {
+
+        /**
+         * Sets the base {@link InventoryArchetype} for the Inventory.
+         *
+         * @param archetype The InventoryArchetype
+         * @return Fluent pattern
+         */
+        Builder of(InventoryArchetype archetype);
+
+        /**
+         * Sets an {@link InventoryProperty}.
+         *
+         * @param name The name
+         * @param property The property
+         * @return Fluent pattern
+         */
+        // TODO only properties declared in the archetype are allowed? IllegalArgumentException?
+        Builder property(String name, InventoryProperty<?, ?> property);
+
+        /**
+         * Sets the {@link Carrier} that carries the Inventory.
+         *
+         * @param carrier The Carrier
+         * @return Fluent pattern
+         */
+        Builder withCarrier(Carrier carrier);
+
+        /**
+         * Registers a listener for given Event type
+         *
+         * @param type The type
+         * @param listener The listener
+         * @return Fluent pattern
+         */
+        <E extends InteractInventoryEvent> Builder listener(Class<E> type, Consumer<E> listener);
+
+        /**
+         * Sets the InventoryArchetype and Properties according to the
+         * {@link Carrier}s Inventory.
+         *
+         * @param carrier The Carrier
+         * @return Fluent pattern
+         */
+        Builder forCarrier(Carrier carrier);
+
+        /**
+         * Sets the InventoryArchetype and Properties for a default Inventory of
+         * given {@link Carrier}.
+         *
+         * @param carrier The Carrier class
+         * @return Fluent pattern
+         */
+        Builder forCarrier(Class<? extends Carrier> carrier);
+
+        /**
+         * Builds the {@link Inventory}.
+         *
+         * @param plugin The plugin building this inventory
+         * @return The new Inventory instance
+         */
+        Inventory build(Object plugin);
+
+    }
 }

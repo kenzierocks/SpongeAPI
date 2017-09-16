@@ -24,16 +24,17 @@
  */
 package org.spongepowered.api.command;
 
-import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.command.dispatcher.Dispatcher;
+import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+
+import javax.annotation.Nullable;
 
 /**
  * A command dispatcher watches for commands (such as those said in chat)
@@ -55,8 +56,10 @@ public interface CommandManager extends Dispatcher {
      * @param plugin A plugin instance
      * @param callable The command
      * @param alias An array of aliases
-     * @return The registered command mapping, unless no aliases could be registered
-     * @throws IllegalArgumentException Thrown if {@code plugin} is not a plugin instance
+     * @return The registered command mapping, unless no aliases could be
+     *     registered
+     * @throws IllegalArgumentException Thrown if {@code plugin} is not a
+     *     plugin instance
      */
     Optional<CommandMapping> register(Object plugin, CommandCallable callable, String... alias);
 
@@ -66,16 +69,18 @@ public interface CommandManager extends Dispatcher {
      * <p>If there is a conflict with one of the aliases (i.e. that alias
      * is already assigned to another command), then the alias will be skipped.
      * It is possible for there to be no alias to be available out of
-     * the provided list of aliases, which would mean that the command would not
-     * be assigned to any aliases.</p>
+     * the provided list of aliases, which would mean that the command would
+     * not be assigned to any aliases.</p>
      *
      * <p>The first non-conflicted alias becomes the "primary alias."</p>
      *
      * @param plugin A plugin instance
      * @param callable The command
      * @param aliases A list of aliases
-     * @return The registered command mapping, unless no aliases could be registered
-     * @throws IllegalArgumentException Thrown if {@code plugin} is not a plugin instance
+     * @return The registered command mapping, unless no aliases could be
+     *     registered
+     * @throws IllegalArgumentException Thrown if {@code plugin} is not a
+     *     plugin instance
      */
     Optional<CommandMapping> register(Object plugin, CommandCallable callable, List<String> aliases);
 
@@ -97,9 +102,12 @@ public interface CommandManager extends Dispatcher {
      * @param callable The command
      * @param aliases A list of aliases
      * @param callback The callback
-     * @return The registered command mapping, unless no aliases could be registered
-     * @throws IllegalArgumentException Thrown if new conflicting aliases are added in the callback
-     * @throws IllegalArgumentException Thrown if {@code plugin} is not a plugin instance
+     * @return The registered command mapping, unless no aliases could be
+     *     registered
+     * @throws IllegalArgumentException Thrown if new conflicting aliases are
+     *     added in the callback
+     * @throws IllegalArgumentException Thrown if {@code plugin} is not a
+     *     plugin instance
      */
     Optional<CommandMapping> register(Object plugin, CommandCallable callable, List<String> aliases, Function<List<String>, List<String>> callback);
 
@@ -112,14 +120,14 @@ public interface CommandManager extends Dispatcher {
     Optional<CommandMapping> removeMapping(CommandMapping mapping);
 
     /**
-     * Get a set of plugin containers that have commands registered.
+     * Gets a set of plugin containers that have commands registered.
      *
      * @return A set of plugin containers
      */
     Set<PluginContainer> getPluginContainers();
 
     /**
-     * Get a set of commands owned by the given plugin instance.
+     * Gets a set of commands owned by the given plugin instance.
      *
      * @param instance The plugin instance
      * @return A set of mappings
@@ -127,7 +135,7 @@ public interface CommandManager extends Dispatcher {
     Set<CommandMapping> getOwnedBy(Object instance);
 
     /**
-     * Get the owner of a CommandMapping, if any is present
+     * Gets the owner of a CommandMapping, if any is present
      *
      * @param mapping The mapping to get an owner for
      * @return The owner, if present.
@@ -135,7 +143,7 @@ public interface CommandManager extends Dispatcher {
     Optional<PluginContainer> getOwner(CommandMapping mapping);
 
     /**
-     * Get the number of registered aliases.
+     * Gets the number of registered aliases.
      *
      * @return The number of aliases
      */
@@ -155,7 +163,7 @@ public interface CommandManager extends Dispatcher {
     CommandResult process(CommandSource source, String arguments);
 
     /**
-     * Get a list of suggestions based on input.
+     * Gets a list of suggestions based on input.
      *
      * <p>If a suggestion is chosen by the user, it will replace the last
      * word.</p>

@@ -24,23 +24,31 @@
  */
 package org.spongepowered.api.service.permission;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 import org.spongepowered.api.util.Tristate;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 /**
- * An immutable tree structure for determining node data. Any changes will create new copies of the necessary tree objects.
- * Keys are case-insensitive.
- * Segments of nodes are split by the '.' character
+ * An immutable tree structure for determining node data. Any changes will
+ * create new copies of the necessary tree objects.
+ *
+ * <p>This class is simply provided as a utility for plugins implementing
+ * {@link PermissionService}. It is not a requirement that this class is used,
+ * however the behaviour defined in {@link Subject} regarding implicit node
+ * inheritance should be maintained.</p>
+ *
+ * <ul>
+ *     <li>Keys are case-insensitive.</li>
+ *     <li>Segments of nodes are split by the '.' character</li>
+ * </ul>
  */
 public class NodeTree {
 
-    private static final Pattern SPLIT_REGEX = Pattern.compile("\\.");
+    private static final Splitter NODE_SPLITTER = Splitter.on('.');
     private final Node rootNode;
-
 
     private NodeTree(Tristate value) {
         this.rootNode = new Node(new HashMap<>());
@@ -52,7 +60,8 @@ public class NodeTree {
     }
 
     /**
-     * Create a new node tree with the given values, and a default value of UNDEFINED.
+     * Create a new node tree with the given values, and a default value of
+     * {@link Tristate#UNDEFINED}.
      *
      * @param values The values to set
      * @return The new node tree
@@ -62,7 +71,8 @@ public class NodeTree {
     }
 
     /**
-     * Create a new node tree with the given values, and the specified root fallback value.
+     * Create a new node tree with the given values, and the specified root
+     * fallback value.
      *
      * @param values The values to be contained in this node tree
      * @param defaultValue The fallback value for any completely undefined nodes
@@ -71,7 +81,7 @@ public class NodeTree {
     public static NodeTree of(Map<String, Boolean> values, Tristate defaultValue) {
         NodeTree newTree = new NodeTree(defaultValue);
         for (Map.Entry<String, Boolean> value : values.entrySet()) {
-            String[] parts = SPLIT_REGEX.split(value.getKey().toLowerCase());
+            Iterable<String> parts = NODE_SPLITTER.split(value.getKey().toLowerCase());
             Node currentNode = newTree.rootNode;
             for (String part : parts) {
                 if (currentNode.children.containsKey(part)) {
@@ -88,13 +98,14 @@ public class NodeTree {
     }
 
     /**
-     * Returns the value assigned to a specific node, or the nearest parent value in the tree if the node itself is undefined.
+     * Returns the value assigned to a specific node, or the nearest parent
+     * value in the tree if the node itself is undefined.
      *
      * @param node The path to get the node value at
      * @return The tristate value for the given node
      */
     public Tristate get(String node) {
-        String[] parts = SPLIT_REGEX.split(node.toLowerCase());
+        Iterable<String> parts = NODE_SPLITTER.split(node.toLowerCase());
         Node currentNode = this.rootNode;
         Tristate lastUndefinedVal = Tristate.UNDEFINED;
         for (String str : parts) {
@@ -140,7 +151,7 @@ public class NodeTree {
      * @return The new, modified node tree
      */
     public NodeTree withValue(String node, Tristate value) {
-        String[] parts = SPLIT_REGEX.split(node.toLowerCase());
+        Iterable<String> parts = NODE_SPLITTER.split(node.toLowerCase());
         Node newRoot = new Node(new HashMap<>(this.rootNode.children));
         Node newPtr = newRoot;
         Node currentPtr = this.rootNode;

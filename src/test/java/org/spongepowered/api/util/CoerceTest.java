@@ -24,13 +24,11 @@
  */
 package org.spongepowered.api.util;
 
-
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
 import java.util.Optional;
-
 
 public class CoerceTest {
 
@@ -66,7 +64,7 @@ public class CoerceTest {
         assertTrue(!nullBoolean.isPresent());
 
         Optional<Boolean> invalidBoolean = Coerce.asBoolean("foo");
-        assertTrue(!nullBoolean.isPresent());
+        assertTrue(!invalidBoolean.isPresent());
     }
 
     @Test

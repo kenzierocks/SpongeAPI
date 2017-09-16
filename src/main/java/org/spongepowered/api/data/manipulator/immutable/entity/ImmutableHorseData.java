@@ -28,14 +28,12 @@ import org.spongepowered.api.data.manipulator.ImmutableDataManipulator;
 import org.spongepowered.api.data.manipulator.mutable.entity.HorseData;
 import org.spongepowered.api.data.type.HorseColor;
 import org.spongepowered.api.data.type.HorseStyle;
-import org.spongepowered.api.data.type.HorseVariant;
 import org.spongepowered.api.data.value.immutable.ImmutableValue;
-import org.spongepowered.api.entity.living.animal.Horse;
+import org.spongepowered.api.entity.living.animal.RideableHorse;
 
 /**
  * An {@link ImmutableDataManipulator} handling the various information for a
- * {@link Horse} including {@link HorseColor}, {@link HorseStyle}, and
- * {@link HorseVariant}.
+ * {@link RideableHorse} including {@link HorseColor}, {@link HorseStyle}.
  */
 public interface ImmutableHorseData extends ImmutableDataManipulator<ImmutableHorseData, HorseData> {
 
@@ -52,16 +50,5 @@ public interface ImmutableHorseData extends ImmutableDataManipulator<ImmutableHo
      * @return The immutable value for the horse style
      */
     ImmutableValue<HorseStyle> style();
-
-    /**
-     * Gets the {@link ImmutableValue} for the {@link HorseVariant}.
-     *
-     * <p>HorseVariants may change the capability of a horse. Some horses
-     * are unable to equip an extra chest, while others are unable to equip
-     * armor. Health may be affected.</p>
-     *
-     * @return The immutable value for the horse variant
-     */
-    ImmutableValue<HorseVariant> variant();
 
 }

@@ -35,7 +35,6 @@ import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.event.Cancellable;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.cause.Cause;
-import org.spongepowered.api.event.world.TargetWorldEvent;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
@@ -46,7 +45,7 @@ import java.util.function.Predicate;
  * Base event for when {@link BlockState}s at {@link Location}s are being
  * changed.
  */
-public interface ChangeBlockEvent extends TargetWorldEvent, Cancellable {
+public interface ChangeBlockEvent extends Event, Cancellable {
 
     /**
      * Gets a list of the {@link Transaction}s for this event. If a
@@ -67,7 +66,8 @@ public interface ChangeBlockEvent extends TargetWorldEvent, Cancellable {
      * <p>{@link Transaction#getOriginal()} is used to get the {@link Location}</p>
      *
      * @param predicate The predicate to use for filtering
-     * @return The transactions for which the predicate returned <code>false</code>
+     * @return The transactions for which the predicate returned
+     *     <code>false</code>
      */
     default List<Transaction<BlockSnapshot>> filter(Predicate<Location<World>> predicate) {
         List<Transaction<BlockSnapshot>> invalidatedTransactions = Lists.newArrayList();
@@ -94,7 +94,7 @@ public interface ChangeBlockEvent extends TargetWorldEvent, Cancellable {
      * Called before running specific block logic at one or more 
      * {@link Location}'s such as {@link BlockTypes#FLOWING_WATER}.
      */
-    interface Pre extends TargetWorldEvent, Cancellable {
+    interface Pre extends Event, Cancellable {
 
         /**
          * Represents a list of one or more {@link Location}'s where
@@ -103,9 +103,9 @@ public interface ChangeBlockEvent extends TargetWorldEvent, Cancellable {
          * <p>Canceling this event will prevent block logic from running
          * and also stop {@link BlockSnapshot}'s from being generated.</p>
          *
-         * <p>Note: This event is not intended to always be fired before changing
-         * a {@link BlockState} but rather it is primarily used to prevent one
-         * or more {@link BlockState}'s from being changed.</p>
+         * <p>Note: This event is not intended to always be fired before
+         * changing a {@link BlockState} but rather it is primarily used to
+         * prevent one or more {@link BlockState}'s from being changed.</p>
          *
          * @return The immutable list of one or more locations that can change
          */
@@ -168,8 +168,8 @@ public interface ChangeBlockEvent extends TargetWorldEvent, Cancellable {
      * the piston head moving, and the adjacent block being set in a new
      * position.</p>
      *
-     * Note: This event is fired after processing all other
-     * ChangeBlockEvent's.
+     * <p>>Note: This event is fired after processing all other
+     * ChangeBlockEvent's.</p>
      */
     interface Post extends ChangeBlockEvent {}
 }

@@ -24,11 +24,11 @@
  */
 package org.spongepowered.api.text.action;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.EntityType;
-import org.spongepowered.api.item.inventory.ItemStack;
-import org.spongepowered.api.statistic.achievement.Achievement;
+import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.util.Identifiable;
 
@@ -77,7 +77,7 @@ public abstract class HoverAction<R> extends TextAction<R> {
     /**
      * Shows information about an item.
      */
-    public static final class ShowItem extends HoverAction<ItemStack> {
+    public static final class ShowItem extends HoverAction<ItemStackSnapshot> {
 
         /**
          * Constructs a new {@link ShowItem} instance that will show information
@@ -85,25 +85,8 @@ public abstract class HoverAction<R> extends TextAction<R> {
          *
          * @param item The item to display
          */
-        ShowItem(ItemStack item) {
+        ShowItem(ItemStackSnapshot item) {
             super(item);
-        }
-
-    }
-
-    /**
-     * Shows information about an achievement.
-     */
-    public static final class ShowAchievement extends HoverAction<Achievement> {
-
-        /**
-         * Constructs a new {@link ShowAchievement} instance that will show
-         * information about an achievement when it is hovered.
-         *
-         * @param achievement The achievement to display
-         */
-        ShowAchievement(Achievement achievement) {
-            super(achievement);
         }
 
     }
@@ -151,7 +134,7 @@ public abstract class HoverAction<R> extends TextAction<R> {
              * @param name The name of the entity
              */
             public Ref(UUID uuid, String name) {
-                this(uuid, name, Optional.<EntityType>empty());
+                this(uuid, name, Optional.empty());
             }
 
             /**
@@ -228,7 +211,7 @@ public abstract class HoverAction<R> extends TextAction<R> {
 
             @Override
             public String toString() {
-                return Objects.toStringHelper(this)
+                return MoreObjects.toStringHelper(this)
                         .add("uuid", this.uuid)
                         .add("name", this.name)
                         .add("type", this.type)

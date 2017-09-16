@@ -42,7 +42,7 @@ import org.spongepowered.api.world.World;
  * Represents the data of a {@link TileEntity} which does not exist in the world
  * and may be used to create new {@link TileEntity}s with the same data.
  */
-public interface TileEntityArchetype extends Archetype<BlockSnapshot> {
+public interface TileEntityArchetype extends Archetype<BlockSnapshot, TileEntity> {
 
     /**
      * Creates a {@link Builder} to get {@link TileEntityArchetype}s.
@@ -104,17 +104,17 @@ public interface TileEntityArchetype extends Archetype<BlockSnapshot> {
         @Override
         Builder from(TileEntityArchetype value);
 
+        Builder from(Location<World> location);
+
         /**
          * Sets the {@link BlockState} of the archetype.
-         * 
+         *
          * @param state The new block state
          * @return This builder, for chaining
          */
         Builder state(BlockState state);
 
         Builder tile(TileEntityType tileEntityType);
-
-        Builder from(Location<World> location);
 
         Builder tile(TileEntity tileEntity);
 

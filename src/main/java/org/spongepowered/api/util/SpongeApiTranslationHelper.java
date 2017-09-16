@@ -40,14 +40,14 @@ import java.util.function.Function;
  */
 public class SpongeApiTranslationHelper {
 
-    private static final Function<Locale, ResourceBundle> LOOKUP_FUNC =
-            input -> ResourceBundle.getBundle("org.spongepowered.api.Translations", input);
+    private static final Function<Locale, ResourceBundle> LOOKUP_FUNC = input ->
+            ResourceBundle.getBundle("org.spongepowered.api.Translations", input);
 
     private SpongeApiTranslationHelper() {
     } // Prevent instance creation
 
     /**
-     * Get the translated text for a given string.
+     * Gets the translated text for a given string.
      *
      * @param key The translation key
      * @param args Translation parameters

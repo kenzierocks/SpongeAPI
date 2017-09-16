@@ -29,9 +29,10 @@ import org.spongepowered.api.entity.ai.task.AITask;
 import org.spongepowered.api.entity.living.Agent;
 import org.spongepowered.api.event.Cancellable;
 import org.spongepowered.api.event.entity.living.TargetAgentEvent;
-import org.spongepowered.api.eventgencore.annotation.codecheck.CompareTo;
-import org.spongepowered.api.eventgencore.annotation.codecheck.FactoryCodeCheck;
+import org.spongepowered.api.event.impl.AbstractAITaskEvent;
+import org.spongepowered.api.util.annotation.eventgen.ImplementedBy;
 
+@ImplementedBy(AbstractAITaskEvent.class)
 public interface AITaskEvent extends TargetAgentEvent, Cancellable {
 
     /**
@@ -39,7 +40,6 @@ public interface AITaskEvent extends TargetAgentEvent, Cancellable {
      *
      * @return The goal
      */
-    @CompareTo(method = "getOwner", position = 1)
     Goal<? extends Agent> getGoal();
 
     /**
@@ -50,7 +50,8 @@ public interface AITaskEvent extends TargetAgentEvent, Cancellable {
     AITask<? extends Agent> getTask();
 
     /**
-     * Gets the priority the task will be assigned to. Lower numbers mean higher priority.
+     * Gets the priority the task will be assigned to. Lower numbers mean
+     * higher priority.
      *
      * @return The priority
      */
@@ -59,17 +60,18 @@ public interface AITaskEvent extends TargetAgentEvent, Cancellable {
     /**
      * Fired when an {@link AITask} is added to an {@link Agent}'s {@link Goal}.
      */
-    @FactoryCodeCheck(errorMessage = "The target entity '%s' is not the owner of the goal '%s'!")
     interface Add extends AITaskEvent {
         /**
-         * Gets the original priority that {@link AITaskEvent#getTask()} will be assigned to. See {@link AITaskEvent#getPriority()}.
+         * Gets the original priority that {@link AITaskEvent#getTask()} will
+         * be assigned to. See {@link AITaskEvent#getPriority()}.
          *
          * @return The original priority
          */
         int getOriginalPriority();
 
         /**
-         * Sets the priority the task will be assigned to. See {@link AITaskEvent#getPriority()}.
+         * Sets the priority the task will be assigned to. See
+         * {@link AITaskEvent#getPriority()}.
          *
          * @param priority The new priority
          */
@@ -77,9 +79,9 @@ public interface AITaskEvent extends TargetAgentEvent, Cancellable {
     }
 
     /**
-     * Fired when an {@link AITask} is removed from an {@link Agent}'s {@link Goal}.
+     * Fired when an {@link AITask} is removed from an {@link Agent}'s
+     * {@link Goal}.
      */
-    @FactoryCodeCheck(errorMessage = "The target entity '%s' is not the owner of the goal '%s'!")
     interface Remove extends AITaskEvent {
 
     }

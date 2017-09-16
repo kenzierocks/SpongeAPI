@@ -24,9 +24,7 @@
  */
 package org.spongepowered.api.profile;
 
-import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.profile.property.ProfileProperty;
-import org.spongepowered.api.service.user.UserStorageService;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -86,32 +84,6 @@ public interface GameProfileManager {
     }
 
     /**
-     * Looks up a {@link GameProfile} by its unique ID.
-     *
-     * <p>The returned {@link CompletableFuture} throws an {@link ExecutionException}
-     * caused by a {@link ProfileNotFoundException} if the profile does not exist or
-     * an {@link IOException} if a network error occurred.</p>
-     *
-     * @param uniqueId The unique ID
-     * @param useCache true to perform a cache lookup first
-     * @return The result of the request
-     */
-    CompletableFuture<GameProfile> get(UUID uniqueId, boolean useCache);
-
-    /**
-     * Gets a collection of {@link GameProfile}s by their unique IDs.
-     *
-     * <p>The returned {@link CompletableFuture} throws an {@link ExecutionException}
-     * caused by a {@link ProfileNotFoundException} if the profile does not exist or
-     * an {@link IOException} if a network error occurred.</p>
-     *
-     * @param uniqueIds The UUIDs
-     * @param useCache true to perform a cache lookup first
-     * @return The result of the request
-     */
-    CompletableFuture<Collection<GameProfile>> getAllById(Iterable<UUID> uniqueIds, boolean useCache);
-
-    /**
      * Looks up a {@link GameProfile} by its user name (case-insensitive).
      *
      * <p>This method checks the local profile cache before contacting the
@@ -130,6 +102,19 @@ public interface GameProfileManager {
     }
 
     /**
+     * Looks up a {@link GameProfile} by its unique ID.
+     *
+     * <p>The returned {@link CompletableFuture} throws an {@link ExecutionException}
+     * caused by a {@link ProfileNotFoundException} if the profile does not exist or
+     * an {@link IOException} if a network error occurred.</p>
+     *
+     * @param uniqueId The unique ID
+     * @param useCache true to perform a cache lookup first
+     * @return The result of the request
+     */
+    CompletableFuture<GameProfile> get(UUID uniqueId, boolean useCache);
+
+    /**
      * Looks up a {@link GameProfile} by its user name (case-insensitive).
      *
      * <p>The returned {@link CompletableFuture} throws an {@link ExecutionException}
@@ -141,6 +126,19 @@ public interface GameProfileManager {
      * @return The result of the request
      */
     CompletableFuture<GameProfile> get(String name, boolean useCache);
+
+    /**
+     * Gets a collection of {@link GameProfile}s by their unique IDs.
+     *
+     * <p>The returned {@link CompletableFuture} throws an {@link ExecutionException}
+     * caused by a {@link ProfileNotFoundException} if the profile does not exist or
+     * an {@link IOException} if a network error occurred.</p>
+     *
+     * @param uniqueIds The UUIDs
+     * @param useCache true to perform a cache lookup first
+     * @return The result of the request
+     */
+    CompletableFuture<Collection<GameProfile>> getAllById(Iterable<UUID> uniqueIds, boolean useCache);
 
     /**
      * Gets a collection of {@link GameProfile}s by their user names
@@ -221,38 +219,5 @@ public interface GameProfileManager {
      * @return The default cache.
      */
     GameProfileCache getDefaultCache();
-
-    /**
-     * Gets a collection of all cached {@link GameProfile}s.
-     *
-     * @return A {@link Collection} of {@link GameProfile}s
-     * @deprecated use {@link GameProfileCache#getProfiles()} instead
-     */
-    @Deprecated
-    default Collection<GameProfile> getCachedProfiles() {
-        return this.getCache().getProfiles();
-    }
-
-    /**
-     * Returns a collection of matching cached {@link GameProfile}s whose last
-     * known names start with the given string (case-insensitive).
-     *
-     * <p>This collection may also contain profiles of players who never played
-     * on the server!</p>
-     *
-     * <p>Use {@link UserStorageService#match(String)} for a collection that
-     * only contains {@link GameProfile}s with attached {@link User} data.</p>
-     *
-     * <p>This method only searches the local cache, so the data may not be up
-     * to date.</p>
-     *
-     * @param name The name
-     * @return A {@link Collection} of matching {@link GameProfile}s
-     * @deprecated use {@link GameProfileCache#match(String)} instead
-     */
-    @Deprecated
-    default Collection<GameProfile> match(String name) {
-        return this.getCache().match(name);
-    }
 
 }

@@ -29,6 +29,7 @@ import static org.spongepowered.api.command.args.GenericArguments.firstParsing;
 import static org.spongepowered.api.command.args.GenericArguments.optional;
 import static org.spongepowered.api.util.SpongeApiTranslationHelper.t;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import org.spongepowered.api.command.CommandCallable;
@@ -63,7 +64,7 @@ public final class CommandSpec implements CommandCallable {
     private final CommandElement args;
     private final CommandExecutor executor;
     private final Optional<Text> description;
-    @Nullable private final Text extendedDescription;
+    private final Optional<Text> extendedDescription;
     @Nullable private final String permission;
     private final InputTokenizer argumentParser;
 
@@ -73,7 +74,7 @@ public final class CommandSpec implements CommandCallable {
         this.executor = executor;
         this.permission = permission;
         this.description = Optional.ofNullable(description);
-        this.extendedDescription = extendedDescription;
+        this.extendedDescription = Optional.ofNullable(extendedDescription);
         this.argumentParser = parser;
     }
 
@@ -108,7 +109,7 @@ public final class CommandSpec implements CommandCallable {
         Builder() {}
 
         /**
-         * Set the permission that will be checked before using this command.
+         * Sets the permission that will be checked before using this command.
          *
          * @param permission The permission to check
          * @return this
@@ -119,9 +120,10 @@ public final class CommandSpec implements CommandCallable {
         }
 
         /**
-         * Set the callback that will handle this command's execution.
+         * Sets the callback that will handle this command's execution.
          *
-         * @param executor The executor that will be called with this command's parsed arguments
+         * @param executor The executor that will be called with this command's
+         *     parsed arguments
          * @return this
          */
         public Builder executor(CommandExecutor executor) {
@@ -151,8 +153,8 @@ public final class CommandSpec implements CommandCallable {
          *
          * @param child The child to add
          * @param aliases Aliases to make the child available under. First
-         *     one is primary and is the only one guaranteed to be listed in usage
-         *     outputs.
+         *     one is primary and is the only one guaranteed to be listed in
+         *     usage outputs.
          *
          * @return this
          */
@@ -169,8 +171,8 @@ public final class CommandSpec implements CommandCallable {
          *
          * @param child The child to add.
          * @param aliases Aliases to make the child available under. First
-         *     one is primary and is the only one guaranteed to be listed in usage
-         *     outputs.
+         *     one is primary and is the only one guaranteed to be listed in
+         *     usage outputs.
          *
          * @return this
          */
@@ -194,8 +196,9 @@ public final class CommandSpec implements CommandCallable {
         }
 
         /**
-         * Sets an extended description to use in longer help listings for this command.
-         * Will be appended to the short description and the command's usage.
+         * Sets an extended description to use in longer help listings for this
+         * command. Will be appended to the short description and the command's
+         * usage.
          *
          * @param extendedDescription The description to set
          * @return this
@@ -206,8 +209,9 @@ public final class CommandSpec implements CommandCallable {
         }
 
         /**
-         * Set the argument specification for this command.
-         * Generally, for a multi-argument command the {@link GenericArguments#seq(CommandElement...)} method is used to parse a sequence of args
+         * Sets the argument specification for this command. Generally, for a
+         * multi-argument command the {@link GenericArguments#seq(CommandElement...)}
+         * method is used to parse a sequence of args.
          *
          * @see GenericArguments
          * @param args The arguments object to use
@@ -220,8 +224,9 @@ public final class CommandSpec implements CommandCallable {
         }
 
         /**
-         * Set the argument specification for this command. This method accepts a sequence of arguments. This is equivalent to calling {@code
-         * arguments(seq(args))}
+         * Sets the argument specification for this command. This method accepts
+         * a sequence of arguments. This is equivalent to calling {@code
+         * arguments(seq(args))}.
          *
          * @see GenericArguments
          * @param args The arguments object to use
@@ -234,7 +239,8 @@ public final class CommandSpec implements CommandCallable {
         }
 
         /**
-         * Set the input tokenizer to be used to convert input from a string into a list of argument tokens.
+         * Sets the input tokenizer to be used to convert input from a string
+         * into a list of argument tokens.
          *
          * @see InputTokenizer for common input parser implementations
          * @param parser The parser to use
@@ -247,7 +253,8 @@ public final class CommandSpec implements CommandCallable {
         }
 
         /**
-         * Create a new {@link CommandSpec} based on the data provided in this builder.
+         * Create a new {@link CommandSpec} based on the data provided in this
+         * builder.
          *
          * @return the new spec
          */
@@ -278,7 +285,8 @@ public final class CommandSpec implements CommandCallable {
     }
 
     /**
-     * Check the relevant permission for this command with the provided source, throwing an exception if the source does not have permission to use
+     * Check the relevant permission for this command with the provided source,
+     * throwing an exception if the source does not have permission to use
      * the command.
      *
      * @param source The source to check
@@ -309,7 +317,8 @@ public final class CommandSpec implements CommandCallable {
     }
 
     /**
-     * Return tab completion results using the existing parsed arguments and context. Primarily useful when including a subcommand in an existing
+     * Return tab completion results using the existing parsed arguments and
+     * context. Primarily useful when including a subcommand in an existing
      * specification.
      *
      * @param source The source to parse arguments for
@@ -334,7 +343,7 @@ public final class CommandSpec implements CommandCallable {
     }
 
     /**
-     * Gets the active input tokenizer used for this commmand.
+     * Gets the active input tokenizer used for this command.
      *
      * @return This command's input tokenizer
      */
@@ -378,6 +387,15 @@ public final class CommandSpec implements CommandCallable {
     }
 
     /**
+     * Gets the extended description used with this command if any is present
+     *
+     * @return the extended description.
+     */
+    public Optional<Text> getExtendedDescription(CommandSource source) {
+        return this.extendedDescription;
+    }
+
+    /**
      * Gets the usage for this command appropriate for the provided command
      * source.
      *
@@ -402,14 +420,9 @@ public final class CommandSpec implements CommandCallable {
     public Optional<Text> getHelp(CommandSource source) {
         checkNotNull(source, "source");
         Text.Builder builder = Text.builder();
-        Optional<Text> desc = getShortDescription(source);
-        if (desc.isPresent()) {
-            builder.append(desc.get(), Text.NEW_LINE);
-        }
+        this.getShortDescription(source).ifPresent((a) -> builder.append(a, Text.NEW_LINE));
         builder.append(getUsage(source));
-        if (this.extendedDescription != null) {
-            builder.append(Text.NEW_LINE, this.extendedDescription);
-        }
+        this.getExtendedDescription(source).ifPresent((a) -> builder.append(Text.NEW_LINE, a));
         return Optional.of(builder.build());
     }
 
@@ -437,7 +450,7 @@ public final class CommandSpec implements CommandCallable {
 
     @Override
     public String toString() {
-        return Objects.toStringHelper(this)
+        return MoreObjects.toStringHelper(this)
                 .add("args", this.args)
                 .add("executor", this.executor)
                 .add("description", this.description)

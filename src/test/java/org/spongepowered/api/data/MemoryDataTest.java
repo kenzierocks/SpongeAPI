@@ -25,8 +25,8 @@
 package org.spongepowered.api.data;
 
 import static org.junit.Assert.assertTrue;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
-import static org.powermock.api.mockito.PowerMockito.when;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.spongepowered.api.data.DataQuery.of;
 
 import com.google.common.base.Objects;
@@ -35,12 +35,9 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
-import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.persistence.DataBuilder;
+import org.spongepowered.api.util.test.TestHooks;
 
 import java.util.Arrays;
 import java.util.List;
@@ -48,18 +45,16 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(Sponge.class)
 public class MemoryDataTest {
 
     @Test
     public void testCreateDataView() {
-        new MemoryDataContainer();
+        DataContainer.createNew();
     }
 
     @Test
     public void testCreateView() {
-        DataContainer container = new MemoryDataContainer();
+        DataContainer container = DataContainer.createNew();
         DataQuery tempQuery = of("foo", "bar", "baz");
         container.createView(tempQuery);
         assertTrue(container.getView(tempQuery).isPresent());
@@ -67,7 +62,7 @@ public class MemoryDataTest {
 
     @Test
     public void testSetData() {
-        DataContainer container = new MemoryDataContainer();
+        DataContainer container = DataContainer.createNew();
         DataQuery testQuery = of('.', "foo.bar");
         container.set(testQuery, 1);
         Optional<Integer> optional = container.getInt(testQuery);
@@ -76,7 +71,7 @@ public class MemoryDataTest {
 
     @Test
     public void testIncorrectType() {
-        DataContainer container = new MemoryDataContainer();
+        DataContainer container = DataContainer.createNew();
         DataQuery testQuery = of("foo", "bar");
         container.set(testQuery, "foo");
         Optional<Integer> optional = container.getInt(testQuery);
@@ -85,7 +80,7 @@ public class MemoryDataTest {
 
     @Test
     public void testToString() {
-        DataContainer container = new MemoryDataContainer();
+        DataContainer container = DataContainer.createNew();
         DataQuery testQuery = of("foo", "bar", "baz");
         List<Integer> intList = ImmutableList.of(1, 2, 3, 4);
         container.set(testQuery, intList);
@@ -110,12 +105,12 @@ public class MemoryDataTest {
             list.add(new SimpleData(i, 0.1 * i, "i", Lists.asList(number, new String[] {" foo", "bar"})));
         }
         container.set(of("SimpleData"), list);
-        String containerString = container.toString();
+        container.toString();
     }
 
     @Test
     public void testNumbers() {
-        DataContainer container = new MemoryDataContainer();
+        DataContainer container = DataContainer.createNew();
         DataQuery testQuery = of("foo", "bar");
         container.set(testQuery, 1.0D);
         Optional<Integer> integerOptional = container.getInt(testQuery);
@@ -131,7 +126,7 @@ public class MemoryDataTest {
 
     @Test
     public void testBoolean() {
-        DataContainer container = new MemoryDataContainer();
+        DataContainer container = DataContainer.createNew();
         DataQuery testQuery = of("foo", "bar");
         container.set(testQuery, false);
         Optional<Boolean> booleanOptional = container.getBoolean(testQuery);
@@ -141,7 +136,7 @@ public class MemoryDataTest {
 
     @Test
     public void testString() {
-        DataContainer container = new MemoryDataContainer();
+        DataContainer container = DataContainer.createNew();
         DataQuery testQuery = of("foo", "bar");
         container.set(testQuery, "foo");
         Optional<String> stringOptional = container.getString(testQuery);
@@ -151,7 +146,7 @@ public class MemoryDataTest {
 
     @Test
     public void testAbsents() {
-        DataContainer container = new MemoryDataContainer();
+        DataContainer container = DataContainer.createNew();
         DataQuery testQuery = of("foo", "bar", "baz");
         assertTrue(!container.get(testQuery).isPresent());
         assertTrue(!container.getBoolean(testQuery).isPresent());
@@ -175,7 +170,7 @@ public class MemoryDataTest {
 
     @Test
     public void testNumberedLists() {
-        DataContainer container = new MemoryDataContainer();
+        DataContainer container = DataContainer.createNew();
         DataQuery testQuery = of("foo", "bar", "baz");
         List<Integer> intList = ImmutableList.of(1, 2, 3, 4);
         container.set(testQuery, intList);
@@ -201,11 +196,11 @@ public class MemoryDataTest {
 
     @Test
     public void testLists() {
-        DataContainer container = new MemoryDataContainer();
+        DataContainer container = DataContainer.createNew();
         DataQuery query = of("foo");
         List<DataView> list = Lists.newArrayList();
         for (int i = 0; i < 1; i++) {
-            DataContainer internal = new MemoryDataContainer();
+            DataContainer internal = DataContainer.createNew();
             internal.set(of("foo", "bar"), "foo.bar" + i);
             int[] ints = new int[] {0, 1, 2, 3, i};
             internal.set(of("ints"), Arrays.asList(ints));
@@ -219,7 +214,7 @@ public class MemoryDataTest {
 
     @Test
     public void testEmptyQuery() {
-        DataContainer container = new MemoryDataContainer();
+        DataContainer container = DataContainer.createNew();
         DataQuery query = of("");
         container.set(query, "foo");
         assertTrue(container.get(query).isPresent());
@@ -228,7 +223,7 @@ public class MemoryDataTest {
 
     @Test
     public void testContainsEmpty() {
-        DataContainer container = new MemoryDataContainer();
+        DataContainer container = DataContainer.createNew();
         DataQuery query = of("");
         assertTrue(!container.contains(query));
         container.set(query, "foo");
@@ -241,19 +236,24 @@ public class MemoryDataTest {
 
     @Test
     public void testGetName() {
-        DataContainer container = new MemoryDataContainer();
+        DataContainer container = DataContainer.createNew();
         assertTrue(container.getName() !=  null);
     }
 
-    @Test
-    public void testGetSerializable() {
+    private static void initGame() throws Exception {
         // Need to mock the service Sadly, this takes the most amount of time
-        DataManager service = Mockito.mock(DataManager.class);
+        DataManager service = mock(DataManager.class);
         DataBuilder<SimpleData> builder = new SimpleDataBuilder();
-        mockStatic(Sponge.class);
-        when(Sponge.getDataManager()).thenReturn(service);
-        Mockito.stub(service.getBuilder(SimpleData.class)).toReturn(Optional.of(builder));
-        Mockito.stub(service.getTranslator(Mockito.any())).toReturn(Optional.empty());
+
+        TestHooks.setInstance("dataManager", service);
+
+        when(service.getBuilder(SimpleData.class)).thenReturn(Optional.of(builder));
+        when(service.getTranslator(Mockito.any())).thenReturn(Optional.empty());
+    }
+
+    @Test
+    public void testGetSerializable() throws Exception {
+        initGame();
 
         List<String> myList = ImmutableList.of("foo", "bar", "baz");
 
@@ -268,20 +268,15 @@ public class MemoryDataTest {
     }
 
     @Test
-    public void testGetSerializableList() {
-        DataManager service = Mockito.mock(DataManager.class);
-        DataBuilder<SimpleData> builder = new SimpleDataBuilder();
-        mockStatic(Sponge.class);
-        when(Sponge.getDataManager()).thenReturn(service);
-        Mockito.stub(service.getBuilder(SimpleData.class)).toReturn(Optional.of(builder));
-        Mockito.stub(service.getTranslator(Mockito.any())).toReturn(Optional.empty());
+    public void testGetSerializableList() throws Exception {
+        initGame();
 
         List<SimpleData> list = Lists.newArrayList();
         for (int i = 0; i < 1000; i++) {
             String number = Integer.toString(i);
             list.add(new SimpleData(i, 0.1 * i, "i", Lists.asList(number, new String[] {" foo", "bar"})));
         }
-        DataContainer container = new MemoryDataContainer();
+        DataContainer container = DataContainer.createNew();
         container.set(of("foo", "bar"), list);
         assertTrue(container.contains(of("foo", "bar")));
         Optional<List<SimpleData>> fromContainer = container.getSerializableList(of("foo", "bar"), SimpleData.class);
@@ -299,7 +294,7 @@ public class MemoryDataTest {
         queries.add(of("foo", "bar"));
         queries.add(of("foo", "bar", "baz"));
         queries.add(of("bar"));
-        DataView view = new MemoryDataContainer();
+        DataView view = DataContainer.createNew();
         view.set(of("foo"), "foo");
         view.set(of("foo", "bar"), "foobar");
         view.set(of("foo", "bar", "baz"), "foobarbaz");
@@ -316,7 +311,7 @@ public class MemoryDataTest {
 
     @Test
     public void testGetMaps() {
-        DataView view = new MemoryDataContainer();
+        DataView view = DataContainer.createNew();
         view.set(of("foo", "bar", "foo"), "foo");
         view.set(of("foo", "bar", "bar"), "foobar");
         view.set(of("foo", "bar", "baz"), "foobarbaz");
@@ -361,7 +356,7 @@ public class MemoryDataTest {
             stringList.add("Foo" + i);
         }
         myMap.put("myList", stringList);
-        DataView view = new MemoryDataContainer();
+        DataView view = DataContainer.createNew();
         view.set(of("Foo"), myMap);
 
         Map<?, ?> retrievedMap = view.getMap(of("Foo")).get();
@@ -371,21 +366,21 @@ public class MemoryDataTest {
 
     @Test
     public void testCopy() {
-        final DataContainer container = new MemoryDataContainer();
+        final DataContainer container = DataContainer.createNew();
         container.set(of("Foo"), "foo");
         final DataContainer newContainer = container.copy();
         assertTrue(container.equals(newContainer));
         container.set(of("Foo", "bar"), "foo.bar");
         final DataView internal = container.getView(of("Foo")).get().copy();
-        final DataContainer internalCopy = new MemoryDataContainer().set(of("bar"), "foo.bar");
+        final DataContainer internalCopy = DataContainer.createNew().set(of("bar"), "foo.bar");
         assertTrue(internal.equals(internalCopy));
     }
 
     @Test
     public void testTest() {
 
-        DataContainer containertest = new MemoryDataContainer();
-        DataContainer containertest2 = new MemoryDataContainer();
+        DataContainer containertest = DataContainer.createNew();
+        DataContainer containertest2 = DataContainer.createNew();
         containertest.set(DataQuery.of("test1", "test2", "test3"), containertest2);
     }
 
@@ -402,13 +397,13 @@ public class MemoryDataTest {
         sub.add(ImmutableList.of(data1));
         sub.add(ImmutableList.of(data2));
 
-        DataContainer main = new MemoryDataContainer();
+        DataContainer main = DataContainer.createNew();
 
         main.set(DataQuery.of("ROOT"), data3);
         main.set(DataQuery.of("SINGLE"), ImmutableList.of(data2));
         main.set(DataQuery.of("SUB"), values);
 
-        Map<?, ?> map = main.getMap(of()).get();
+        main.getMap(of()).get();
     }
 
 }

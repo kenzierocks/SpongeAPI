@@ -39,7 +39,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -60,17 +59,15 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.tools.FileObject;
 
-@SupportedAnnotationTypes({
-        "org.spongepowered.api.plugin.Plugin",
-        "org.spongepowered.api.plugin.Dependency"
-})
-@SupportedOptions({
-        PluginProcessor.EXTRA_FILES_OPTION,
-        PluginProcessor.OUTPUT_FILE_OPTION
-})
+@SupportedAnnotationTypes({ PluginProcessor.PLUGIN_ANNOTATION_CLASS, PluginProcessor.DEPENDENCY_ANNOTATION_CLASS })
+@SupportedOptions({ PluginProcessor.EXTRA_FILES_OPTION, PluginProcessor.OUTPUT_FILE_OPTION })
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class PluginProcessor extends AbstractProcessor {
 
+    static final String PLUGIN_PACKAGE = "org.spongepowered.api.plugin.";
+    static final String PLUGIN_ANNOTATION_CLASS = PluginProcessor.PLUGIN_PACKAGE + "Plugin";
+    static final String DEPENDENCY_ANNOTATION_CLASS = PluginProcessor.PLUGIN_PACKAGE + "Dependency";
+    
     public static final String EXTRA_FILES_OPTION = "extraMetadataFiles";
     public static final String OUTPUT_FILE_OPTION = "metadataOutputFile";
 
@@ -83,7 +80,7 @@ public class PluginProcessor extends AbstractProcessor {
     private Path outputPath;
 
     @Override
-    public void init(ProcessingEnvironment processingEnv) {
+    public synchronized void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
 
         String extraFiles = processingEnv.getOptions().get(EXTRA_FILES_OPTION);
@@ -95,11 +92,11 @@ public class PluginProcessor extends AbstractProcessor {
                     for (PluginMetadata meta : McModInfo.DEFAULT.read(path)) {
                         PluginMetadata base = this.meta.putIfAbsent(meta.getId(), meta);
                         if (base != null) {
-                            PluginElement.applyMeta(base, meta, getMessager());
+                            base.accept(meta);
                         }
                     }
                 } catch (IOException e) {
-                    throw new PluginProcessExeption("Failed to read extra plugin metadata from " + path, e);
+                    throw new PluginProcessException("Failed to read extra plugin metadata from " + path, e);
                 }
             }
         }
@@ -117,10 +114,10 @@ public class PluginProcessor extends AbstractProcessor {
                 finish();
             }
 
-            return true;
+            return false;
         }
 
-        if (!contains(annotations, Plugin.class)) {
+        if (!ProcessorUtils.contains(annotations, Plugin.class)) {
             return false;
         }
 
@@ -131,7 +128,7 @@ public class PluginProcessor extends AbstractProcessor {
             }
 
             final TypeElement pluginElement = (TypeElement) e;
-            AnnotationWrapper<Plugin> annotation = AnnotationWrapper.get(pluginElement, Plugin.class);
+            AnnotationWrapper<Plugin> annotation = AnnotationWrapper.of(pluginElement, Plugin.class);
 
             final String id = annotation.get().id();
             if (id.isEmpty()) {
@@ -162,7 +159,7 @@ public class PluginProcessor extends AbstractProcessor {
             plugin.apply(getMessager());
         }
 
-        return true;
+        return false;
     }
 
     private void finish() {
@@ -178,7 +175,7 @@ public class PluginProcessor extends AbstractProcessor {
         try (BufferedWriter writer = createWriter()) {
             McModInfo.DEFAULT.write(writer, meta);
         } catch (IOException e) {
-            throw new PluginProcessExeption("Failed to write plugin metadata", e);
+            throw new PluginProcessException("Failed to write plugin metadata", e);
         }
     }
 
@@ -186,11 +183,11 @@ public class PluginProcessor extends AbstractProcessor {
         if (this.outputPath != null) {
             getMessager().printMessage(NOTE, "Writing plugin metadata to " + this.outputPath);
             return Files.newBufferedWriter(this.outputPath);
-        } else {
-            FileObject obj = this.processingEnv.getFiler().createResource(CLASS_OUTPUT, "", McModInfo.STANDARD_FILENAME);
-            getMessager().printMessage(NOTE, "Writing plugin metadata to " + obj.toUri());
-            return new BufferedWriter(obj.openWriter());
         }
+
+        FileObject obj = this.processingEnv.getFiler().createResource(CLASS_OUTPUT, "", McModInfo.STANDARD_FILENAME);
+        getMessager().printMessage(NOTE, "Writing plugin metadata to " + obj.toUri());
+        return new BufferedWriter(obj.openWriter());
     }
 
     private void reportDuplicatePlugin(String id, PluginElement plugin) {
@@ -200,21 +197,6 @@ public class PluginProcessor extends AbstractProcessor {
 
     private Messager getMessager() {
         return this.processingEnv.getMessager();
-    }
-
-    private static boolean contains(Collection<? extends TypeElement> elements, Class<?> clazz) {
-        if (elements.isEmpty()) {
-            return false;
-        }
-
-        final String name = clazz.getName();
-        for (TypeElement element : elements) {
-            if (element.getQualifiedName().contentEquals(name)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
 }

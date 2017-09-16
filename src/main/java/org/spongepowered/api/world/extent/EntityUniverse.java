@@ -24,6 +24,7 @@
  */
 package org.spongepowered.api.world.extent;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.flowpowered.math.imaginary.Quaterniond;
@@ -42,8 +43,8 @@ import org.spongepowered.api.util.AABB;
 
 import java.util.Collection;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.Predicate;
 
 /**
@@ -77,6 +78,26 @@ public interface EntityUniverse {
     Collection<Entity> getEntities();
 
     /**
+     * Return a collection of entities contained within {@code distance} blocks
+     * of the specified location. This uses a sphere to test distances.
+     *
+     * <p>For world implementations, only some parts of the world is usually
+     * loaded, so this method will only return entities within those loaded
+     * parts.</p>
+     *
+     * @param location The location at the center of the search radius
+     * @param distance The search radius
+     * @return A collection of nearby entities
+     */
+    default Collection<Entity> getNearbyEntities(Vector3d location, double distance) {
+        checkNotNull(location, "location");
+        checkArgument(distance > 0, "distance must be > 0");
+        return this.getIntersectingEntities(new AABB(location.getX() - distance, location.getY() - distance, location.getZ() - distance,
+                location.getX() + distance, location.getY() + distance, location.getZ() + distance),
+                entity -> entity.getLocation().getPosition().distanceSquared(location) <= distance * distance);
+    }
+
+    /**
      * Return a collection of entities contained within this universe, possibly
      * only returning entities only in loaded areas. The returned entities are
      * filtered by the given {@link Predicate} before being returned.
@@ -103,7 +124,8 @@ public interface EntityUniverse {
      * @param type The type
      * @param position The position
      * @return An entity, if one was created
-     * @throws IllegalArgumentException If the position or entity type is not valid to create
+     * @throws IllegalArgumentException If the position or entity type is not
+     *      valid to create
      * @throws IllegalStateException If a constructor cannot be found
      */
     Entity createEntity(EntityType type, Vector3d position) throws IllegalArgumentException, IllegalStateException;
@@ -121,10 +143,12 @@ public interface EntityUniverse {
      * @param type The type
      * @param position The position
      * @return An entity, if one was created
-     * @throws IllegalArgumentException If the position or entity type is not valid to create
+     * @throws IllegalArgumentException If the position or entity type is not
+     *      valid to create
      * @throws IllegalStateException If a constructor cannot be found
      */
     default Entity createEntity(EntityType type, Vector3i position) throws IllegalArgumentException, IllegalStateException {
+        checkNotNull(position, "position");
         return createEntity(type, position.toDouble());
     }
 
@@ -158,6 +182,49 @@ public interface EntityUniverse {
      * @return An entity, if one was created
      */
     Optional<Entity> createEntity(DataContainer entityContainer, Vector3d position);
+
+    /**
+     * Create an entity instance at the given position with the default
+     * equipment.
+     *
+     * <p>Creating an entity does not spawn the entity into the world. An entity
+     * created means the entity can be spawned at the given location. If
+     * {@link Optional#empty()} was returned, the entity is not able to spawn at
+     * the given location. Furthermore, this allows for the {@link Entity} to be
+     * customized further prior to traditional "ticking" and processing by core
+     * systems.</p>
+     *
+     * @param type The type
+     * @param position The position
+     * @return An entity, if one was created
+     * @throws IllegalArgumentException If the position or entity type is not
+     *     valid to create
+     * @throws IllegalStateException If a constructor cannot be found
+     */
+    Entity createEntityNaturally(EntityType type, Vector3d position) throws IllegalArgumentException, IllegalStateException;
+
+    /**
+     * Create an entity instance at the given position with the default
+     * equipment.
+     *
+     * <p>Creating an entity does not spawn the entity into the world. An entity
+     * created means the entity can be spawned at the given location. If
+     * {@link Optional#empty()} was returned, the entity is not able to spawn at
+     * the given location. Furthermore, this allows for the {@link Entity} to be
+     * customized further prior to traditional "ticking" and processing by core
+     * systems.</p>
+     *
+     * @param type The type
+     * @param position The position
+     * @return An entity, if one was created
+     * @throws IllegalArgumentException If the position or entity type is not
+     *     valid to create
+     * @throws IllegalStateException If a constructor cannot be found
+     */
+    default Entity createEntityNaturally(EntityType type, Vector3i position) throws IllegalArgumentException, IllegalStateException {
+        checkNotNull(position, "position");
+        return createEntityNaturally(type, position.toDouble());
+    }
 
     /**
      * Creates and restores an {@link Entity} from the provided
@@ -240,7 +307,7 @@ public interface EntityUniverse {
      * @param start The start of the ray
      * @param end The end of the ray
      * @return The intersecting entities in no particular order, with the
-     * associated intersection point and normal
+     *      associated intersection point and normal
      */
     default Set<EntityHit> getIntersectingEntities(Vector3d start, Vector3d end) {
         return getIntersectingEntities(start, end, hit -> true);
@@ -255,7 +322,7 @@ public interface EntityUniverse {
      * @param end The end of the ray
      * @param filter The filter test
      * @return The intersecting entities in no particular order, with the
-     * associated intersection point and normal
+     *      associated intersection point and normal
      */
     Set<EntityHit> getIntersectingEntities(Vector3d start, Vector3d end, Predicate<EntityHit> filter);
 
@@ -268,7 +335,7 @@ public interface EntityUniverse {
      * @param looker The looking entity
      * @param distance The distance of the ray (from the start)
      * @return The intersecting entities in no particular order, with the
-     * associated intersection point and normal
+     *      associated intersection point and normal
      */
     default Set<EntityHit> getIntersectingEntities(Entity looker, double distance) {
         return getIntersectingEntities(looker, distance, hit -> true);
@@ -284,7 +351,7 @@ public interface EntityUniverse {
      * @param distance The distance of the ray (from the start)
      * @param filter The filter test
      * @return The intersecting entities in no particular order, with the
-     * associated intersection point and normal
+     *      associated intersection point and normal
      */
     default Set<EntityHit> getIntersectingEntities(Entity looker, double distance, Predicate<EntityHit> filter) {
         checkNotNull(looker, "looker");
@@ -303,7 +370,7 @@ public interface EntityUniverse {
      * @param direction The direction of the ray
      * @param distance The distance of the ray (from the start)
      * @return The intersecting entities in no particular order, with the
-     * associated intersection point and normal
+     *      associated intersection point and normal
      */
     default Set<EntityHit> getIntersectingEntities(Vector3d start, Vector3d direction, double distance) {
         return getIntersectingEntities(start, direction, distance, hit -> true);
@@ -319,7 +386,7 @@ public interface EntityUniverse {
      * @param distance The distance of the ray (from the start)
      * @param filter The filter test
      * @return The intersecting entities in no particular order, with the
-     * associated intersection point and normal
+     *      associated intersection point and normal
      */
     Set<EntityHit> getIntersectingEntities(Vector3d start, Vector3d direction, double distance, Predicate<EntityHit> filter);
 

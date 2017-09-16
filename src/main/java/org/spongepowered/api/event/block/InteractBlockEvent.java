@@ -29,6 +29,7 @@ import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.action.InteractEvent;
+import org.spongepowered.api.event.entity.living.humanoid.HandInteractEvent;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.util.Direction;
 import org.spongepowered.api.util.Tristate;
@@ -37,7 +38,7 @@ import org.spongepowered.api.world.Location;
 /**
  * Base event for all interactions involving a {@link BlockSnapshot} at a
  * {@link Location}.
- * 
+ *
  * <p>Note: Any interaction that occurs within {@link BlockTypes#AIR} where the
  * {@link Location} is not known, will contain a {@link BlockSnapshot#NONE}.</p>
  */
@@ -53,12 +54,12 @@ public interface InteractBlockEvent extends InteractEvent, TargetBlockEvent {
     Direction getTargetSide();
 
     /**
-     * An event where the targeted block is being interacted with the client's 
+     * An event where the targeted block is being interacted with the client's
      * "primary" button.
      *
-     * This is usually left-click.
+     * <p>This is usually left-click.</p>
      */
-    interface Primary extends InteractBlockEvent {
+    interface Primary extends InteractBlockEvent, HandInteractEvent {
 
         /**
          * A {@link Primary} event where the interaction is from the client's main hand.
@@ -72,12 +73,12 @@ public interface InteractBlockEvent extends InteractEvent, TargetBlockEvent {
     }
 
     /**
-     * An event where the targeted block is being interacted with the client's 
+     * An event where the targeted block is being interacted with the client's
      * "secondary" button.
      *
-     * This is usually right-click.
+     * <p>This is usually right-click.</p>
      */
-    interface Secondary extends InteractBlockEvent {
+    interface Secondary extends InteractBlockEvent, HandInteractEvent {
 
         Tristate getOriginalUseItemResult();
 

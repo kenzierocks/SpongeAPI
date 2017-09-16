@@ -27,6 +27,7 @@ package org.spongepowered.api.profile;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.service.user.UserStorageService;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
@@ -48,7 +49,21 @@ public interface GameProfileCache {
      *     otherwise {@code false}
      */
     default boolean add(GameProfile profile) {
-        return this.add(profile, null);
+        return this.add(profile, (Instant) null);
+    }
+
+    /**
+     * Add an entry to this cache, with an optional expiration date.
+     *
+     * @param profile The profile to cache
+     * @param expiry The expiration date
+     * @return {@code true} if the profile was successfully cached,
+     *     otherwise {@code false}
+     * @deprecated Use {@link #add(GameProfile, Instant)}
+     */
+    @Deprecated
+    default boolean add(GameProfile profile, @Nullable Date expiry) {
+        return this.add(profile, expiry == null ? null : expiry.toInstant());
     }
 
     /**
@@ -59,7 +74,7 @@ public interface GameProfileCache {
      * @return {@code true} if the profile was successfully cached,
      *     otherwise {@code false}
      */
-    default boolean add(GameProfile profile, @Nullable Date expiry) {
+    default boolean add(GameProfile profile, @Nullable Instant expiry) {
         return this.add(profile, false, expiry);
     }
 
@@ -68,12 +83,28 @@ public interface GameProfileCache {
      *
      * @param profile The profile to cache
      * @param overwrite If we should overwrite the cache entry for
-     * the provided profile
+     *      the provided profile
+     * @param expiry The expiration date
+     * @return {@code true} if the profile was successfully cached,
+     *     otherwise {@code false}
+     * @deprecated Use {@link #add(GameProfile, boolean, Instant)}
+     */
+    @Deprecated
+    default boolean add(GameProfile profile, boolean overwrite, @Nullable Date expiry) {
+        return this.add(profile, overwrite, expiry == null ? null : expiry.toInstant());
+    }
+
+    /**
+     * Add an entry to this cache, with an optional expiration date.
+     *
+     * @param profile The profile to cache
+     * @param overwrite If we should overwrite the cache entry for
+     *      the provided profile
      * @param expiry The expiration date
      * @return {@code true} if the profile was successfully cached,
      *     otherwise {@code false}
      */
-    boolean add(GameProfile profile, boolean overwrite, @Nullable Date expiry);
+    boolean add(GameProfile profile, boolean overwrite, @Nullable Instant expiry);
 
     /**
      * Remove an entry from this cache.
@@ -143,6 +174,7 @@ public interface GameProfileCache {
      *     we couldn't lookup a profile with the provided id
      */
     Optional<GameProfile> getOrLookupById(UUID uniqueId);
+
     /**
      * Gets {@link GameProfile}s in bulk from this cache by when available,
      * and lookups the profiles by their unique id when not cached.

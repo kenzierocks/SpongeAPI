@@ -34,6 +34,8 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.projectile.arrow.Arrow;
 import org.spongepowered.api.event.Cancellable;
 import org.spongepowered.api.event.cause.Cause;
+import org.spongepowered.api.event.cause.entity.ModifierFunction;
+import org.spongepowered.api.event.cause.entity.damage.DamageFunction;
 import org.spongepowered.api.event.cause.entity.damage.DamageModifier;
 import org.spongepowered.api.event.cause.entity.damage.DamageModifierType;
 import org.spongepowered.api.event.cause.entity.damage.DamageModifierTypes;
@@ -42,12 +44,12 @@ import org.spongepowered.api.event.cause.entity.damage.source.BlockDamageSource;
 import org.spongepowered.api.event.cause.entity.damage.source.DamageSource;
 import org.spongepowered.api.event.cause.entity.damage.source.EntityDamageSource;
 import org.spongepowered.api.event.impl.AbstractAttackEntityEvent;
-import org.spongepowered.api.eventgencore.annotation.ImplementedBy;
-import org.spongepowered.api.eventgencore.annotation.PropertySettings;
 import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.util.Tuple;
+import org.spongepowered.api.util.annotation.eventgen.ImplementedBy;
+import org.spongepowered.api.util.annotation.eventgen.PropertySettings;
 import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.difficulty.Difficulties;
 import org.spongepowered.api.world.difficulty.Difficulty;
@@ -55,6 +57,7 @@ import org.spongepowered.api.world.difficulty.Difficulty;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
 
 /**
@@ -111,23 +114,27 @@ import java.util.function.Function;
  *
  * <p>Note that due to the mechanics of the game, {@link DamageModifier}s
  * are always ordered in the order of which they apply their modifier onto
- * the "base" damage. The implementation for {@link #getFinalOutputDamage()} can be
- * exemplified like so: <pre>{@code
- *  double damage = this.baseDamage;
- *  for (Map.Entry<DamageModifier, Function<? super Double, Double>> entry : this.modifierFunctions.entrySet()) {
- *   damage += checkNotNull(entry.getValue().apply(damage));
- *  }
- *  return damage;
- * }</pre> After which, the "final" damage is simply the summation of the
+ * the "base" damage. The implementation for {@link #getFinalOutputDamage()} can
+ * be exemplified like so:</p>
+ *
+ * <blockquote><code>double damage = this.baseDamage;<br />
+ * for (Map.Entry&lt;DamageModifier, Function&lt;? super Double, Double&gt;&gt;
+ * entry : this.modifierFunctions.entrySet()) {<br />
+ * &nbsp;&nbsp;damage += checkNotNull(entry.getValue().apply(damage));<br />
+ * }<br />
+ * return damage;
+ * </code></blockquote>
+ *
+ * <p>After which, the "final" damage is simply the summation of the
  * "base" damage and all "modified damage" for each {@link DamageModifier}
  * prorivded in this event.</p>
  *
  * <p>Coming forward, it is possible to further customize not only the "base"
  * damage, but override pre-existing {@link DamageModifier} {@link Function}s
- * by calling {@link #setOutputDamage(DamageModifier, Function)} at which point the
+ * by calling {@link #setOutputDamage(DamageModifier, DoubleUnaryOperator)} at which point the
  * end result may be undefined. However, if a custom {@link DamageModifier}
  * that aims to alter the "final" damage based on some custom circumstances,
- * calling {@link #setOutputDamage(DamageModifier, Function)} on a <em>new</em>
+ * calling {@link #setOutputDamage(DamageModifier, DoubleUnaryOperator)} on a <em>new</em>
  * {@link DamageModifier} instance, easily created from the
  * {@link org.spongepowered.api.event.cause.entity.damage.DamageModifier.Builder},
  * the provided pairing will be added at the
@@ -153,12 +160,14 @@ public interface AttackEntityEvent extends TargetEntityEvent, Cancellable {
      * an {@link ItemStackSnapshot}, usually a helmet.
      */
     String HARD_HAT_ARMOR = "HardHat";
+
     /**
-     * For use with a {@link DamageModifier} where it's type is a
-     * {@link DamageModifierTypes#BLOCKING} and the {@link Cause} contains
-     * an {@link ItemStackSnapshot}, usually an item that can "block".
+     * or use with a {@link DamageModifier} where its type is a
+     * {@link DamageModifierTypes#SHIELD} and the {@link Cause} contains
+     * an {@link ItemStackSnapshot} (in Vanilla, a shield).
      */
-    String BLOCKING = "Blocking";
+    String SHIELD = "Shield";
+
     /**
      * For use with a {@link DamageModifier} where it's type is a
      * {@link DamageModifierTypes#ARMOR} and the {@link Cause} contains
@@ -264,7 +273,7 @@ public interface AttackEntityEvent extends TargetEntityEvent, Cancellable {
      *
      * @return The list of damage modifier functions
      */
-    List<Tuple<DamageModifier, Function<? super Double, Double>>> getOriginalFunctions();
+    List<ModifierFunction<DamageModifier>> getOriginalFunctions();
 
     /**
      * Gets the "base" damage to deal to the targeted {@link Entity}. The
@@ -333,7 +342,7 @@ public interface AttackEntityEvent extends TargetEntityEvent, Cancellable {
      * @param damageModifier The damage modifier
      * @param function The function to map to the modifier
      */
-    void setOutputDamage(DamageModifier damageModifier, Function<? super Double, Double> function);
+    void setOutputDamage(DamageModifier damageModifier, DoubleUnaryOperator function);
 
     /**
      * Adds the provided {@link DamageModifier} and {@link Function} to the
@@ -346,18 +355,19 @@ public interface AttackEntityEvent extends TargetEntityEvent, Cancellable {
      * @param before The set containing the modifier types to come after
      *     the provided modifier
      */
-    void addDamageModifierBefore(DamageModifier damageModifier, Function<? super Double, Double> function, Set<DamageModifierType> before);
+    void addDamageModifierBefore(DamageModifier damageModifier, DoubleUnaryOperator function, Set<DamageModifierType> before);
 
     /**
      * Adds the provided {@link DamageModifier} and {@link Function} to the list
-     * of modifiers, such that the modifier will appear in order after any current modifiers
-     * whose type are included in the provided {@link Set} of {@link DamageModifierType}s.
+     * of modifiers, such that the modifier will appear in order after any
+     * current modifiers whose type are included in the provided {@link Set}
+     * of {@link DamageModifierType}s.
      *
      * @param damageModifier The damage modifier to add
      * @param function The associated function
      * @param after The set of modifier types to come before the new modifier
      */
-    void addDamageModifierAfter(DamageModifier damageModifier, Function<? super Double, Double> function, Set<DamageModifierType> after);
+    void addDamageModifierAfter(DamageModifier damageModifier, DoubleUnaryOperator function, Set<DamageModifierType> after);
 
     /**
      * Gets a list of simple {@link Tuple}s of {@link DamageModifier} keyed to
@@ -368,10 +378,22 @@ public interface AttackEntityEvent extends TargetEntityEvent, Cancellable {
      * @return A list of damage modifiers to functions
      */
     @PropertySettings(requiredParameter = false, generateMethods = false)
-    List<Tuple<DamageModifier, Function<? super Double, Double>>> getModifiers();
+    List<DamageFunction> getModifiers();
 
+    /**
+     * Gets the knock back modifier. The modifier itself will apply to the
+     * momentum of the attacked entity.
+     *
+     * @return The knock back modifier
+     */
     int getKnockbackModifier();
 
+    /**
+     * Sets the knock back modifier. The modifier itself will apply to the
+     * momentum of the attacked entity.
+     *
+     * @param modifier The knock back modifier to set
+     */
     void setKnockbackModifier(int modifier);
 
 }

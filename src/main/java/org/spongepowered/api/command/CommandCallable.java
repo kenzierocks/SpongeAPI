@@ -24,15 +24,15 @@
  */
 package org.spongepowered.api.command;
 
-import com.google.common.collect.ImmutableList;
-import org.spongepowered.api.text.Text;
 import org.spongepowered.api.command.spec.CommandSpec;
+import org.spongepowered.api.text.Text;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
+
+import javax.annotation.Nullable;
 
 /**
  * A low-level interface for commands that can be executed. For almost all use
@@ -57,14 +57,15 @@ public interface CommandCallable {
     CommandResult process(CommandSource source, String arguments) throws CommandException;
 
     /**
-     * Get a list of suggestions based on input.
+     * Gets a list of suggestions based on input.
      *
      * <p>If a suggestion is chosen by the user, it will replace the last
      * word.</p>
      *
      * @param source The command source
      * @param arguments The arguments entered up to this point
-     * @param targetPosition The position the source is looking at when performing tab completion
+     * @param targetPosition The position the source is looking at when
+     *     performing tab completion
      * @return A list of suggestions
      * @throws CommandException Thrown if there was a parsing error
      */
@@ -84,7 +85,7 @@ public interface CommandCallable {
     boolean testPermission(CommandSource source);
 
     /**
-     * Get a short one-line description of this command.
+     * Gets a short one-line description of this command.
      *
      * <p>The help system may display the description in the command list.</p>
      *
@@ -94,7 +95,7 @@ public interface CommandCallable {
     Optional<Text> getShortDescription(CommandSource source);
 
     /**
-     * Get a longer formatted help message about this command.
+     * Gets a longer formatted help message about this command.
      *
      * <p>It is recommended to use the default text color and style. Sections
      * with text actions (e.g. hyperlinks) should be underlined.</p>
@@ -111,7 +112,7 @@ public interface CommandCallable {
     Optional<Text> getHelp(CommandSource source);
 
     /**
-     * Get the usage string of this command.
+     * Gets the usage string of this command.
      *
      * <p>A usage string may look like
      * {@code [-w &lt;world&gt;] &lt;var1&gt; &lt;var2&gt;}.</p>

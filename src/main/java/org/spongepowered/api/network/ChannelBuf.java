@@ -30,8 +30,8 @@ import java.nio.ByteOrder;
 import java.util.UUID;
 
 /**
- * A ChannelStream allows for plugins and the server to read and write Java primitive
- * data and some higher level data to {@link DataView} if necessary.
+ * A ChannelStream allows for plugins and the server to read and write Java
+ * primitive data and some higher level data to {@link DataView} if necessary.
  */
 public interface ChannelBuf {
 
@@ -177,11 +177,21 @@ public interface ChannelBuf {
     ChannelBuf slice(int index, int length);
 
     /**
+     * Returns {@code true} if and only if this buffer has a backing byte array.
+     *
+     * <p>If this method returns true, you can safely call {@link #array()}.</p>
+     *
+     * @return {@code true} if this buffer has a backing byte array
+     */
+    boolean hasArray();
+
+    /**
      * Gets the backing byte array of this stream.
      *
      * @return A copy of the backing byte array
+     * @throws UnsupportedOperationException if there is no backing byte array
      */
-    byte[] array();
+    byte[] array() throws UnsupportedOperationException;
 
     /**
      * Sets the specified boolean at the current writerIndex and increases
@@ -326,6 +336,7 @@ public interface ChannelBuf {
      * <p>The length of the array is expected to be preceding the array as a
      * varint.</p>
      *
+     * @param index The index to read the byte array at
      * @return The byte array
      */
     byte[] readByteArray(int index);
@@ -378,6 +389,7 @@ public interface ChannelBuf {
      * Gets a byte array at the current readerIndex and increases the
      * readerIndex by the length of the array.
      *
+     * @param length The length of the byte array to read from
      * @return The byte array
      */
     byte[] readBytes(int length);
@@ -385,6 +397,8 @@ public interface ChannelBuf {
     /**
      * Gets a byte array at the specified absolute index in this buffer.
      *
+     * @param index The index of this channel buff to read from
+     * @param length The length of the byte array
      * @return The byte array
      */
     byte[] readBytes(int index, int length);
@@ -798,7 +812,7 @@ public interface ChannelBuf {
 
     /**
      * Sets the specified {@link DataView} at the current writerIndex and
-     * increases the writerIndex according to the lenght of the data view
+     * increases the writerIndex according to the length of the data view
      * in this buffer.
      *
      * @param data The data view data

@@ -40,8 +40,8 @@ public class DataQueryTest {
      */
     @Test
     public void testOf() {
-        DataQuery EMPTY = DataQuery.of();
-        DataQuery testQuery = DataQuery.of("derp");
+        DataQuery.of();
+        DataQuery.of("derp");
     }
 
     /**

@@ -24,21 +24,18 @@
  */
 package org.spongepowered.api.data.manipulator.mutable;
 
+import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.data.manipulator.DataManipulator;
 import org.spongepowered.api.data.manipulator.immutable.ImmutableMobSpawnerData;
 import org.spongepowered.api.data.value.mutable.MutableBoundedValue;
 import org.spongepowered.api.data.value.mutable.Value;
 import org.spongepowered.api.data.value.mutable.WeightedCollectionValue;
 import org.spongepowered.api.entity.Entity;
-import org.spongepowered.api.entity.EntitySnapshot;
-import org.spongepowered.api.entity.EntityType;
+import org.spongepowered.api.entity.EntityArchetype;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.util.weighted.WeightedSerializableObject;
 
-import java.util.Collection;
 import java.util.Random;
-
-import javax.annotation.Nullable;
 
 /**
  * Represents the data associated with a mob spawner, including the spawn delay,
@@ -51,6 +48,7 @@ public interface MobSpawnerData extends DataManipulator<MobSpawnerData, Immutabl
      * a new attempt at spawning an {@link Entity} is made.
      *
      * @return The immutable bounded value for the remaining delay
+     * @see Keys#SPAWNER_REMAINING_DELAY
      */
     MutableBoundedValue<Short> remainingDelay();
 
@@ -59,6 +57,7 @@ public interface MobSpawnerData extends DataManipulator<MobSpawnerData, Immutabl
      * required between attempts to spawn an {@link Entity}.
      *
      * @return The bounded value of the minimum spawn delay
+     * @see Keys#SPAWNER_MINIMUM_DELAY
      */
     MutableBoundedValue<Short> minimumSpawnDelay();
 
@@ -67,6 +66,7 @@ public interface MobSpawnerData extends DataManipulator<MobSpawnerData, Immutabl
      * required between attempts to spawn an {@link Entity}.
      *
      * @return The bounded value of the maximum spawn delay
+     * @see Keys#SPAWNER_MAXIMUM_DELAY
      */
     MutableBoundedValue<Short> maximumSpawnDelay();
 
@@ -77,6 +77,7 @@ public interface MobSpawnerData extends DataManipulator<MobSpawnerData, Immutabl
      * attempts are made to spawn an {@link Entity}.
      *
      * @return The immutable bounded value
+     * @see Keys#SPAWNER_SPAWN_COUNT
      */
     MutableBoundedValue<Short> spawnCount();
 
@@ -87,6 +88,7 @@ public interface MobSpawnerData extends DataManipulator<MobSpawnerData, Immutabl
      * provided value, no attempts to spawn a new {@link Entity} will be made.
      *
      * @return The bounded value of the maximum supported nearby entities
+     * @see Keys#SPAWNER_MAXIMUM_NEARBY_ENTITIES
      */
     MutableBoundedValue<Short> maximumNearbyEntities();
 
@@ -97,6 +99,7 @@ public interface MobSpawnerData extends DataManipulator<MobSpawnerData, Immutabl
      * {@link Entity} is made.
      *
      * @return The value of the required player range to spawn entities
+     * @see Keys#SPAWNER_REQUIRED_PLAYER_RANGE
      */
     MutableBoundedValue<Short> requiredPlayerRange();
 
@@ -106,53 +109,32 @@ public interface MobSpawnerData extends DataManipulator<MobSpawnerData, Immutabl
      *
      * @return The immutable value of the maximum spawn range an entity can be
      *     spawned
+     * @see Keys#SPAWNER_SPAWN_RANGE
      */
     MutableBoundedValue<Short> spawnRange();
 
     /**
-     * Gets the {@link NextEntityToSpawnValue} for the overridden
-     * {@link WeightedSerializableObject}{@code <EntitySnapshot>} to spawn
+     * Gets the {@link Value} for the overridden
+     * {@link WeightedSerializableObject}{@code <EntityArchetype>} to spawn
      * next. If possible, the next entity to spawn may be chosen from the
      * already provided {@link #possibleEntitiesToSpawn()}.
      *
      * @return The next possible entity to spawn
+     * @see Keys#SPAWNER_NEXT_ENTITY_TO_SPAWN
      */
-    NextEntityToSpawnValue nextEntityToSpawn();
+    Value<WeightedSerializableObject<EntityArchetype>> nextEntityToSpawn();
 
     /**
      * Gets the {@link WeightedCollectionValue} of all possible
      * {@link Entity} instances that can be spawned by the spawner. As they
-     * are all {@link WeightedSerializableObject}{@code <EntitySnapshot>}
+     * are all {@link WeightedSerializableObject}{@code <EntityArchetype>}
      * instances, their weight is defined as a {@link Random} to determine
      * the next {@link Entity} that will be spawned, unless overriden by
      * {@link #nextEntityToSpawn()}.
      *
      * @return The immutable weighted entity collection value of entities
+     * @see Keys#SPAWNER_ENTITIES
      */
-    WeightedCollectionValue<EntitySnapshot> possibleEntitiesToSpawn();
-
-    /**
-     * Represents a custom {@link Value} dealing with the next
-     * {@link WeightedSerializableObject}{@code <EntitySnapshot>} such that
-     * the next {@link Entity} to spawn may be pulled from the owning
-     * {@link #possibleEntitiesToSpawn()} with a default {@link Random},
-     * or it may be custom defined on a case by case basis.
-     */
-    interface NextEntityToSpawnValue extends Value<WeightedSerializableObject<EntitySnapshot>> {
-
-        /**
-         * Sets this value with the provided {@link EntityType} and
-         * {@link Collection} of {@link DataManipulator}s.
-         *
-         * @param type The type of {@link Entity}
-         * @param additionalProperties Any additional properties to spawn the
-         *     {@link Entity} with
-         * @return The new value, for chaining
-         */
-        NextEntityToSpawnValue set(EntityType type, @Nullable Collection<DataManipulator<?, ?>> additionalProperties);
-
-        @Override
-        ImmutableMobSpawnerData.ImmutableNextEntityToSpawnValue asImmutable();
-    }
+    WeightedCollectionValue<EntityArchetype> possibleEntitiesToSpawn();
 
 }

@@ -26,11 +26,18 @@ package org.spongepowered.api.item.merchant;
 
 import java.util.List;
 import java.util.Random;
-import java.util.function.BiConsumer;
 
-public interface TradeOfferListMutator extends BiConsumer<List<TradeOffer>, Random> {
+public interface TradeOfferListMutator {
 
-    @Override
-    void accept(List<TradeOffer> tradeOffers, Random random);
+    /**
+     * Mutates the provided {@link List list} of {@link TradeOffer}s
+     * with the provided {@link Merchant} and {@link Random} to provide
+     * possible contextualized information.
+     *
+     * @param owner The owner of the list
+     * @param tradeOffers The trade offers currently
+     * @param random The random to use for random number generation
+     */
+    void accept(Merchant owner, List<TradeOffer> tradeOffers, Random random);
 
 }

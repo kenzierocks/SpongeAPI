@@ -25,9 +25,9 @@
 package org.spongepowered.api.event.message;
 
 import org.spongepowered.api.event.Cancellable;
-import org.spongepowered.api.eventgencore.annotation.GenerateFactoryMethod;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.channel.MessageChannel;
+import org.spongepowered.api.util.annotation.eventgen.GenerateFactoryMethod;
 
 import java.util.Optional;
 
@@ -57,7 +57,7 @@ public interface MessageChannelEvent extends MessageEvent {
     Optional<MessageChannel> getChannel();
 
     /**
-     * Set the channel for this message to go to.
+     * Sets the channel for this message to go to.
      *
      * <p>Note that an {@link Optional#empty()} channel is different from a
      * {@link MessageChannel#TO_NONE} channel.</p>
@@ -67,16 +67,19 @@ public interface MessageChannelEvent extends MessageEvent {
     void setChannel(@Nullable MessageChannel channel);
 
     /**
-     * Fired when the {@link Text} being sent to a {@link MessageChannel} was due to chatting.
+     * Fired when the {@link Text} being sent to a {@link MessageChannel} was
+     * due to chatting.
      */
     interface Chat extends MessageChannelEvent, Cancellable {
 
         /**
          * Gets the 'raw' chat message.
          *
-         * <p>This message is the original chat message, without any formatting whatsoever.
-         * In Vanilla, this is equivalent to what a player typed into the chat box
-         * (no name prefix or other elements).</p>
+         * <p>This message is the original chat message, without any formatting
+         * whatsoever.</p>
+         *
+         * <p>In Vanilla, this is equivalent to what a player typed into the
+         * chat box (no name prefix or other elements).</p>
          *
          * @return The raw message
          */

@@ -41,6 +41,7 @@ import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.TeleportHelper;
 
 import java.nio.file.Path;
+import java.util.Optional;
 
 /**
  * The core accessor of the API. The implementation uses this to pass
@@ -49,11 +50,41 @@ import java.nio.file.Path;
 public interface Game {
 
     /**
-     * Returns the current platform, or implementation, this {@link Game} is running on.
+     * Gets the current {@link GameState} that this game is currently in.
      *
-     * @return The current implementation
+     * @return The game state
      */
-    Platform getPlatform();
+    GameState getState();
+
+    /**
+     * Gets the directory where the game's files are located.
+     *
+     * @return The game directory
+     */
+    Path getGameDirectory();
+
+    /**
+     * Gets the directory where the game will store save files.
+     *
+     * <p>This location differs based on the implementation and is therefore
+     * implementation-specific.</p>
+     *
+     * <p>To elaborate, this is how it is handled in Minecraft based on side:
+     * </p>
+     * <ul>
+     *     <li>Client
+     *      <ul>This directory will point to {@link Game#getGameDirectory()}.resolve("saves").resolve(currentSaveName)</ul>
+     *     <li>Server
+     *      <ul>This directory will be equivalent to {@link Game#getGameDirectory()}.resolve(level-name).</ul>
+     * </ul>
+     *
+     * <p>Consult your specific implementation if they support placing this
+     * elsewhere.</p>
+     *
+     * @return The saves directory
+     */
+    Path getSavesDirectory();
+
 
     /**
      * Returns if the {@link Server} is available for use. The result of this method is entirely
@@ -66,45 +97,108 @@ public interface Game {
     /**
      * Gets the {@link Server}.
      *
-     * @throws IllegalStateException If the Server isn't currently available
      * @return The server
+     * @throws IllegalStateException If the Server isn't currently available
      */
     Server getServer();
 
-    /**
-     * Gets the {@link PluginManager}.
-     *
-     * @return The plugin manager
-     */
-    PluginManager getPluginManager();
 
     /**
-     * Gets the {@link EventManager}.
+     * Retrieves the GameDictionary (item dictionary) for this {@link Game}.
      *
-     * @return The event manager
+     * @return The item dictionary, or empty if unsupported
      */
-    EventManager getEventManager();
+    default Optional<GameDictionary> getGameDictionary() {
+        return Optional.empty();
+    }
+
 
     /**
-     * Gets the {@link AssetManager}.
+     * Returns the current platform, or implementation, this {@link Game} is running on.
      *
-     * @return The asset manager
+     * @return The current implementation
      */
-    AssetManager getAssetManager();
+    default Platform getPlatform() {
+        return Sponge.getPlatform();
+    }
+
 
     /**
      * Gets the {@link GameRegistry}.
      *
      * @return The game registry
      */
-    GameRegistry getRegistry();
+    default GameRegistry getRegistry() {
+        return Sponge.getRegistry();
+    }
 
     /**
-     * Retrieves the GameDictionary (item dictionary) for this GameRegistry.
+     * Gets the {@link DataManager} instance to register
+     * {@link DataSerializable}s, and get the related {@link DataBuilder}s.
      *
-     * @return The item dictionary
+     * @return The serialization service
      */
-    GameDictionary getGameDictionary();
+    default DataManager getDataManager() {
+        return Sponge.getDataManager();
+    }
+
+    /**
+     * Gets the {@link PropertyRegistry} instance to register
+     * {@link PropertyStore}s.
+     *
+     * @return The property registry
+     */
+    default PropertyRegistry getPropertyRegistry() {
+        return Sponge.getPropertyRegistry();
+    }
+
+
+    /**
+     * Gets the {@link PluginManager}.
+     *
+     * @return The plugin manager
+     */
+    default PluginManager getPluginManager() {
+        return Sponge.getPluginManager();
+    }
+
+    /**
+     * Gets the {@link EventManager}.
+     *
+     * @return The event manager
+     */
+    default EventManager getEventManager() {
+        return Sponge.getEventManager();
+    }
+
+    /**
+     * Gets the {@link AssetManager}.
+     *
+     * @return The asset manager
+     */
+    default AssetManager getAssetManager() {
+        return Sponge.getAssetManager();
+    }
+
+    /**
+     * Gets the {@link ConfigManager} used to load and manage configuration files
+     * for plugins.
+     *
+     * @return The configuration manager
+     */
+    default ConfigManager getConfigManager() {
+        return Sponge.getConfigManager();
+    }
+
+    /**
+     * Gets the command dispatcher used for registering and dispatching
+     * registered commands.
+     *
+     * @return The command dispatcher
+     */
+    default CommandManager getCommandManager() {
+        return Sponge.getCommandManager();
+    }
 
     /**
      * Gets the game's instance of the service manager, which is the gateway
@@ -114,92 +208,35 @@ public interface Game {
      *
      * @return The service manager
      */
-    ServiceManager getServiceManager();
+    default ServiceManager getServiceManager() {
+        return Sponge.getServiceManager();
+    }
 
     /**
      * Gets the scheduler used to schedule tasks.
      *
      * @return The scheduler
      */
-    Scheduler getScheduler();
-
-    /**
-     * Gets the {@link DataManager} instance to register
-     * {@link DataSerializable}s, and get the related {@link DataBuilder}s.
-     *
-     * @return The serialization service
-     */
-    DataManager getDataManager();
-
-    /**
-     * Gets the {@link PropertyRegistry} instance to register
-     * {@link PropertyStore}s.
-     *
-     * @return The property registry
-     */
-    PropertyRegistry getPropertyRegistry();
-
-    /**
-     * Gets the command dispatcher used for registering and dispatching
-     * registered commands.
-     *
-     * @return The command dispatcher
-     */
-    CommandManager getCommandManager();
-
-    /**
-     * Gets the {@link TeleportHelper}, used to find safe {@link Location}s.
-     * @return The teleport helper
-     */
-    TeleportHelper getTeleportHelper();
-
-    /**
-     * Gets the {@link ConfigManager} used to load and manage configuration files
-     * for plugins.
-     *
-     * @return The configuration manager
-     */
-    ConfigManager getConfigManager();
-
-    /**
-     * Gets the directory where the game's files are located.
-     *
-     * @return The game directory
-     */
-    Path getGameDirectory();
-
-    /**
-     * Gets the directory where the game will store save files.
-     *
-     * This location differs based on the implementation and is therefore implementation-specific.
-     *
-     * <p>
-     *     To elaborate, this is how it is handled in Minecraft based on side:
-     *     <ul>
-     *         <li>Client
-     *          <ul>This directory will point to {@link Game#getGameDirectory()}.resolve("saves").resolve(currentSaveName)</ul>
-     *         <li>Server
-     *          <ul>This directory will be equivalent to {@link Game#getGameDirectory()}.resolve(level-name).</ul>
-     *     </ul>
-     *     Consult your specific implementation if they support placing this elsewhere.
-     * </p>
-     *
-     * @return The saves directory
-     */
-    Path getSavesDirectory();
-
-    /**
-     * Gets the current {@link GameState} that this game is currently in.
-     *
-     * @return The game state
-     */
-    GameState getState();
+    default Scheduler getScheduler() {
+        return Sponge.getScheduler();
+    }
 
     /**
      * Gets the {@link ChannelRegistrar} for creating network channels.
      *
      * @return The channel registrar
      */
-    ChannelRegistrar getChannelRegistrar();
+    default ChannelRegistrar getChannelRegistrar() {
+        return Sponge.getChannelRegistrar();
+    }
+
+
+    /**
+     * Gets the {@link TeleportHelper}, used to find safe {@link Location}s.
+     * @return The teleport helper
+     */
+    default TeleportHelper getTeleportHelper() {
+        return Sponge.getTeleportHelper();
+    }
 
 }

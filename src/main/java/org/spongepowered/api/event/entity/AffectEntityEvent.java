@@ -30,9 +30,8 @@ import org.spongepowered.api.event.Cancellable;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.Order;
 import org.spongepowered.api.event.impl.AbstractAffectEntityEvent;
-import org.spongepowered.api.event.world.TargetWorldEvent;
-import org.spongepowered.api.eventgencore.annotation.ImplementedBy;
-import org.spongepowered.api.eventgencore.annotation.PropertySettings;
+import org.spongepowered.api.util.annotation.eventgen.ImplementedBy;
+import org.spongepowered.api.util.annotation.eventgen.PropertySettings;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.explosion.Explosion;
@@ -52,7 +51,7 @@ import java.util.function.Predicate;
  * Other cases will be included as necessary.
  */
 @ImplementedBy(AbstractAffectEntityEvent.class)
-public interface AffectEntityEvent extends TargetWorldEvent, Cancellable {
+public interface AffectEntityEvent extends Event, Cancellable {
 
     /**
      * Gets an {@link List} of the entity data
@@ -64,6 +63,7 @@ public interface AffectEntityEvent extends TargetWorldEvent, Cancellable {
      * when invoked.</p>
      *
      * @return The ImmutableList
+     * @throws IllegalStateException If the method is called after the pre order
      */
     @PropertySettings(requiredParameter = false, generateMethods = false)
     List<EntitySnapshot> getEntitySnapshots() throws IllegalStateException;

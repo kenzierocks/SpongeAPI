@@ -30,7 +30,7 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.util.Direction;
 import org.spongepowered.api.world.extent.Extent;
-import org.spongepowered.api.world.extent.worker.MutableBiomeAreaWorker;
+import org.spongepowered.api.world.extent.worker.MutableBiomeVolumeWorker;
 import org.spongepowered.api.world.extent.worker.MutableBlockVolumeWorker;
 
 import java.util.Optional;
@@ -64,7 +64,7 @@ public interface Chunk extends Extent {
     }
 
     /**
-     * Get the position of the chunk.
+     * Gets the position of the chunk.
      *
      * <p>The returned position is 3-dimensional with the Y-coordinate set to be
      * the base (lowest) Y-position of the chunk. As 3-dimensional chunks do not
@@ -93,7 +93,7 @@ public interface Chunk extends Extent {
      * Loads this chunk, and generates if specified and required.
      *
      * @param generate Whether or not to generate the chunk if it does not yet
-     * exist
+     *     exist
      * @return If the chunk was successfully loaded
      */
     boolean loadChunk(boolean generate);
@@ -155,7 +155,8 @@ public interface Chunk extends Extent {
      * Gets the chunk in the given direction from this chunk.
      *
      * @param direction The cardinal or ordinal direction to get the chunk from
-     * @param shouldLoad Whether the server should load or generate the chunk if unavailable
+     * @param shouldLoad Whether the server should load or generate the chunk
+     *     if unavailable
      * @return The neighbor chunk, if available or if {@code shouldLoad} is true
      */
     default Optional<Chunk> getNeighbor(Direction direction, boolean shouldLoad) {
@@ -164,7 +165,7 @@ public interface Chunk extends Extent {
     }
 
     @Override
-    MutableBiomeAreaWorker<Chunk> getBiomeWorker();
+    MutableBiomeVolumeWorker<Chunk> getBiomeWorker();
 
     @Override
     MutableBlockVolumeWorker<Chunk> getBlockWorker(Cause cause);

@@ -31,7 +31,6 @@ import static org.mockito.Mockito.withSettings;
 import com.flowpowered.math.vector.Vector3d;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -49,14 +48,13 @@ import org.spongepowered.api.event.entity.ai.AITaskEvent;
 import org.spongepowered.api.event.impl.AbstractEvent;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.util.PEBKACException;
-import org.spongepowered.api.util.generator.event.factory.EventFactory;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.extent.Extent;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.InetSocketAddress;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -93,12 +91,9 @@ public class SpongeEventFactoryTest {
     public static List<Object[]> getMethods() {
         ImmutableList.Builder<Object[]> methods = ImmutableList.builder();
         for (Method method : SpongeEventFactory.class.getMethods()) {
-            if (method.getName().startsWith("createState")) {
-                continue; // TODO minecrell needs to make this possible.
-            }
             if (method.getName().startsWith("create") && Modifier.isStatic(method.getModifiers())
                 && !excludedEvents.contains(method.getReturnType())) {
-                methods.add(new Object[]{method.getReturnType().getSimpleName(), method});
+                methods.add(new Object[]{method.getReturnType().getName(), method});
             }
         }
         return methods.build();
@@ -110,7 +105,7 @@ public class SpongeEventFactoryTest {
     public Method method;
 
     @Test
-    public void testCreate() throws InvocationTargetException, IllegalAccessException {
+    public void testCreate() {
         try {
             // We only care about keeping extends around for the duration
             // of this particular event.
@@ -156,7 +151,7 @@ public class SpongeEventFactoryTest {
                         + "\tSolution: Modify the method name and/or signature to follow the expected getter/sett er semantics,"
                         + "or annotate the event with @ImplementedBy to indicate the abstract class used as the superclass."
                         + "(2) A bug in the class generator was found\n"
-                        + "\tSolution: Look into " + EventFactory.class.getName() + " and its implementations.\n",
+                        + "\tSolution: Look into event-impl-gen.\n",
                         e);
                 }
             }
@@ -176,7 +171,7 @@ public class SpongeEventFactoryTest {
                 + "(). "
                 + "See the wrapped exception for more details.\n"
                 + "(2) A bug in the class generator was found\n"
-                + "\tSolution: Look into " + EventFactory.class.getName() + " and its implementations.\n"
+                + "\tSolution: Look into event-impl-gen.\n"
                 + "(3) A method that does not follow getter/setter semantics (getProp(), isBool(), setProp()) "
                 + "was added (i.e. blockList())\n"
                 + "\tSolution: Revisit " + this.method.getReturnType().getName() + " and its supertypes. If the method in question "
@@ -190,7 +185,6 @@ public class SpongeEventFactoryTest {
         return mockParam(paramType, null);
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
     public static Object mockParam(final Class<?> paramType, @Nullable final Class<?> target) {
         if (paramType == byte.class) {
             return (byte) 0;
@@ -224,7 +218,7 @@ public class SpongeEventFactoryTest {
             return new Transform<>((Extent) mockParam(Extent.class));
         } else if (paramType == Text[].class) {
             return new Text[] {};
-        } else if (InetSocketAddress.class.isAssignableFrom(paramType)){
+        } else if (InetSocketAddress.class.isAssignableFrom(paramType)) {
             return new InetSocketAddress(12345);
         } else if (paramType == UUID.class) {
             return UUID.randomUUID();
@@ -241,6 +235,8 @@ public class SpongeEventFactoryTest {
             return Locale.ROOT;
         } else if (paramType == Text.class) {
             return Text.of();
+        } else if (paramType == Duration.class) {
+            return Duration.ZERO;
         } else {
             return mock(paramType, withSettings().defaultAnswer(EVENT_MOCKING_ANSWER));
         }

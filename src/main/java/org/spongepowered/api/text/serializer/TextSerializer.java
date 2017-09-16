@@ -24,14 +24,21 @@
  */
 package org.spongepowered.api.text.serializer;
 
+import org.spongepowered.api.CatalogType;
+import org.spongepowered.api.GameRegistry;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.util.annotation.CatalogedBy;
 
 /**
  * Represents a serializer for {@link Text} instances that converts an input
  * string into a formatted {@link Text} instance, or a {@link Text} instance
  * into the string representation.
+ *
+ * <p>Custom implementations can be registered using
+ * {@link GameRegistry#register(Class, CatalogType)}.</p>
  */
-public interface TextSerializer {
+@CatalogedBy(TextSerializers.class)
+public interface TextSerializer extends CatalogType {
 
     /**
      * Returns a string representation of the provided {@link Text} in a format
@@ -42,6 +49,18 @@ public interface TextSerializer {
      * @return The string representation of this text
      */
     String serialize(Text text);
+
+    /**
+     * Returns a string representation of only the provided {@link Text}
+     * (without any children) in a format that will be accepted by this
+     * {@link TextSerializer}'s {@link #deserialize(String)} method.
+     *
+     * @param text The text to serialize
+     * @return The string representation of this text (without any children)
+     */
+    default String serializeSingle(Text text) {
+        return serialize(text.toBuilder().removeAll().build());
+    }
 
     /**
      * Returns a {@link Text} instance from an appropriately formatted string.

@@ -34,7 +34,7 @@ import org.spongepowered.api.data.persistence.DataBuilder;
 import org.spongepowered.api.data.persistence.InvalidDataException;
 import org.spongepowered.api.data.value.BaseValue;
 
-public interface EntityArchetype extends Archetype<EntitySnapshot> {
+public interface EntityArchetype extends Archetype<EntitySnapshot, Entity> {
 
     /**
      * Creates a {@link Builder} to get {@link EntityArchetype}s.
@@ -43,6 +43,15 @@ public interface EntityArchetype extends Archetype<EntitySnapshot> {
      */
     static Builder builder() {
         return Sponge.getRegistry().createBuilder(Builder.class);
+    }
+
+    /**
+     * Creates a new {@link EntityArchetype} with the specified {@link EntityType}.
+     * @param type Type of the entity
+     * @return An archetype of the given entity type
+     */
+    static EntityArchetype of(EntityType type) {
+        return builder().type(type).build();
     }
 
     /**
@@ -77,18 +86,60 @@ public interface EntityArchetype extends Archetype<EntitySnapshot> {
         @Override
         Builder from(EntityArchetype value);
 
-        Builder type(EntityType type);
-
+        /**
+         * Sets all possible bits of information from the provided {@link Entity}.
+         *
+         * @param entity The entity to get information from
+         * @return This builder, for chaining
+         */
         Builder from(Entity entity);
 
+        /**
+         * Sets the desired {@link EntityType} of the produced {@link EntityArchetype}.
+         *
+         * @param type The type of entity type
+         * @return This builder, for chaining
+         */
+        Builder type(EntityType type);
+
+        /**
+         * Sets the desired {@link EntityType} of the produced {@link EntityArchetype}.
+         *
+         * @param view The data to set for the archetype
+         * @return This builder, for chaining
+         */
         Builder entityData(DataView view);
 
+        /**
+         * Sets the desired {@link EntityType} of the produced {@link EntityArchetype}.
+         *
+         * @param manipulator The manipulator to set for the archetype
+         * @return This builder, for chaining
+         */
         Builder setData(DataManipulator<?, ?> manipulator);
 
+        /**
+         * Sets the desired {@link EntityType} of the produced {@link EntityArchetype}.
+         *
+         * @param value The type of entity type
+         * @return This builder, for chaining
+         */
         <E, V extends BaseValue<E>> Builder set(V value);
 
+        /**
+         * Sets the desired {@link EntityType} of the produced {@link EntityArchetype}.
+         *
+         * @param key The key
+         * @param value The value to set
+         * @return This builder, for chaining
+         */
         <E, V extends BaseValue<E>> Builder set(Key<V> key, E value);
 
+        /**
+         * Constructs a new {@link EntityArchetype}.
+         *
+         * @return The new entity archetype
+         */
         EntityArchetype build();
     }
 

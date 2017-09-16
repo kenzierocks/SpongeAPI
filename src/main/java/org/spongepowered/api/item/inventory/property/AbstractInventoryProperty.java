@@ -25,7 +25,13 @@
 package org.spongepowered.api.item.inventory.property;
 
 import org.spongepowered.api.data.Property;
+import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.InventoryProperty;
+
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
 
 import javax.annotation.Nullable;
 
@@ -36,7 +42,10 @@ import javax.annotation.Nullable;
  * @param <K> Key type, use {@link String} if no particular key type is required
  * @param <V> Value type
  */
+@SuppressWarnings("rawtypes")
 public abstract class AbstractInventoryProperty<K, V> implements InventoryProperty<K, V> {
+
+    private static Map<Class<? extends InventoryProperty>, String> defaultKeys = new HashMap<>();
 
     /**
      * Operator for comparing to other properties. Operators should always be
@@ -100,7 +109,7 @@ public abstract class AbstractInventoryProperty<K, V> implements InventoryProper
     }
 
     /**
-     * Get the default value for {@link #key}, used in case null is passed in
+     * Gets the default value for {@link #key}, used in case null is passed in
      * (since we can't have a null key). In general this should return the class
      * name of the property itself but subclasses are free to alter this
      * behaviour if they wish.
@@ -111,7 +120,18 @@ public abstract class AbstractInventoryProperty<K, V> implements InventoryProper
      */
     @SuppressWarnings("unchecked")
     protected K getDefaultKey(@Nullable V value) {
-        return (K) this.getClass().getSimpleName();
+        return (K) getDefaultKey(this.getClass());
+    }
+
+    /**
+     * Gets the default key for the provided InventoryProperty class.
+     *
+     * @param clazz The InventoryProperty class.
+     * @param <T> The InventoryProperty type.
+     * @return default key to use.
+     */
+    public static <T extends InventoryProperty<?, ?>> Object getDefaultKey(Class<T> clazz) {
+        return defaultKeys.computeIfAbsent(clazz, k -> k.getSimpleName().toLowerCase(Locale.ENGLISH));
     }
 
     /**
@@ -125,42 +145,26 @@ public abstract class AbstractInventoryProperty<K, V> implements InventoryProper
         return Operator.defaultOperator();
     }
 
-    /* (non-Javadoc)
-     * @see org.spongepowered.api.item.inventory.InventoryProperty#getKey()
-     */
     @Override
     public K getKey() {
         return this.key;
     }
 
-    /* (non-Javadoc)
-     * @see org.spongepowered.api.item.inventory.InventoryProperty#getValue()
-     */
     @Override
     public V getValue() {
         return this.value;
     }
 
-    /* (non-Javadoc)
-     * @see org.spongepowered.api.item.inventory.InventoryProperty#getOperator()
-     */
     @Override
     public Operator getOperator() {
         return this.operator;
     }
 
-    /* (non-Javadoc)
-     * @see org.spongepowered.api.item.inventory.InventoryProperty#matches(
-     *          org.spongepowered.api.item.inventory.InventoryProperty)
-     */
     @Override
     public boolean matches(@Nullable Property<?, ?> other) {
         return this.getOperator().compare(this, other);
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
     @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof InventoryProperty)) {
@@ -168,16 +172,10 @@ public abstract class AbstractInventoryProperty<K, V> implements InventoryProper
         }
 
         InventoryProperty<?, ?> other = (InventoryProperty<?, ?>) obj;
-        if (!other.getKey().equals(this.getKey())) {
-            return false;
-        }
+        return other.getKey().equals(this.getKey()) && other.getValue().equals(this.getValue());
 
-        return other.getValue().equals(this.getValue());
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#hashCode()
-     */
     @Override
     public int hashCode() {
         return this.hashCodeOf(this.getKey()) ^ this.hashCodeOf(this.getValue()) * 37;

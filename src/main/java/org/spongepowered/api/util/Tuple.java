@@ -26,6 +26,7 @@ package org.spongepowered.api.util;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -37,6 +38,16 @@ import org.apache.commons.lang3.tuple.Pair;
  */
 public class Tuple<K, V> {
 
+    /**
+     * Creates a new {@link Tuple} with the desired {@code first} and
+     * {@code second} objects.
+     *
+     * @param first The first object
+     * @param second The second object
+     * @param <K> The type of first object
+     * @param <V> The type of second object
+     * @return The new Tuple
+     */
     public static <K, V> Tuple<K, V> of(K first, V second) {
         return new Tuple<>(first, second);
     }
@@ -44,6 +55,12 @@ public class Tuple<K, V> {
     private final K first;
     private final V second;
 
+    /**
+     * Creates a new {@link Tuple}.
+     *
+     * @param first The first object
+     * @param second The second object
+     */
     public Tuple(K first, V second) {
         this.first = checkNotNull(first);
         this.second = checkNotNull(second);
@@ -69,7 +86,7 @@ public class Tuple<K, V> {
 
     @Override
     public String toString() {
-        return Objects.toStringHelper(this)
+        return MoreObjects.toStringHelper(this)
             .add("first", this.first)
             .add("second", this.second)
             .toString();

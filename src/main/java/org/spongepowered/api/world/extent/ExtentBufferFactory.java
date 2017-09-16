@@ -24,7 +24,6 @@
  */
 package org.spongepowered.api.world.extent;
 
-import com.flowpowered.math.vector.Vector2i;
 import com.flowpowered.math.vector.Vector3i;
 
 /**
@@ -38,17 +37,18 @@ public interface ExtentBufferFactory {
      * @param size The size of the buffer on x and z (y in the vector)
      * @return A new biome buffer
      */
-    MutableBiomeArea createBiomeBuffer(Vector2i size);
+    MutableBiomeVolume createBiomeBuffer(Vector3i size);
 
     /**
      * Returns a new biome buffer of the desired size.
      *
      * @param xSize The size of the buffer on x
+     * @param ySize The size of the buffer on y
      * @param zSize The size of the buffer on z
      * @return A new biome buffer
      */
-    default MutableBiomeArea createBiomeBuffer(int xSize, int zSize) {
-        return createBiomeBuffer(new Vector2i(xSize, zSize));
+    default MutableBiomeVolume createBiomeBuffer(int xSize, int ySize, int zSize) {
+        return createBiomeBuffer(new Vector3i(xSize, ySize, zSize));
     }
 
     /**
@@ -58,18 +58,19 @@ public interface ExtentBufferFactory {
      * @param size The size of the buffer on x and z (y in the vector)
      * @return A new biome buffer
      */
-    MutableBiomeArea createThreadSafeBiomeBuffer(Vector2i size);
+    MutableBiomeVolume createThreadSafeBiomeBuffer(Vector3i size);
 
     /**
      * Returns a new biome buffer of the desired size. This buffer is thread
      * safe.
      *
      * @param xSize The size of the buffer on x
+     * @param ySize The size of the buffer on y
      * @param zSize The size of the buffer on z
      * @return A new biome buffer
      */
-    default MutableBiomeArea createThreadSafeBiomeBuffer(int xSize, int zSize) {
-        return createThreadSafeBiomeBuffer(new Vector2i(xSize, zSize));
+    default MutableBiomeVolume createThreadSafeBiomeBuffer(int xSize, int ySize, int zSize) {
+        return createThreadSafeBiomeBuffer(new Vector3i(xSize, ySize, zSize));
     }
 
     /**
@@ -112,6 +113,25 @@ public interface ExtentBufferFactory {
      */
     default MutableBlockVolume createThreadSafeBlockBuffer(int xSize, int ySize, int zSize) {
         return createThreadSafeBlockBuffer(new Vector3i(xSize, ySize, zSize));
+    }
+
+    /**
+     * Returns a new archetype volume of the desired size.
+     *
+     * @param size The size of the volume
+     * @param origin The origin of the buffer
+     * @return A new archetype volume
+     */
+    ArchetypeVolume createArchetypeVolume(Vector3i size, Vector3i origin);
+
+    /**
+     * Returns a new archetype volume of the desired size.
+     *
+     * @param size The size of the volume
+     * @return A new archetype volume
+     */
+    default ArchetypeVolume createArchetypeVolume(Vector3i size) {
+        return createArchetypeVolume(size, Vector3i.ZERO);
     }
 
 }

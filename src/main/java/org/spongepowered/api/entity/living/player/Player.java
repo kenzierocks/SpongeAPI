@@ -26,7 +26,8 @@ package org.spongepowered.api.entity.living.player;
 
 import org.spongepowered.api.Server;
 import org.spongepowered.api.block.tileentity.EnderChest;
-import org.spongepowered.api.world.Locatable;
+import org.spongepowered.api.command.CommandManager;
+import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.source.RemoteSource;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.data.manipulator.mutable.DisplayNameData;
@@ -35,10 +36,14 @@ import org.spongepowered.api.data.manipulator.mutable.entity.JoinData;
 import org.spongepowered.api.data.type.SkinPart;
 import org.spongepowered.api.data.value.mutable.Value;
 import org.spongepowered.api.effect.Viewer;
+import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.Humanoid;
 import org.spongepowered.api.entity.living.player.gamemode.GameMode;
+import org.spongepowered.api.entity.living.player.gamemode.GameModes;
 import org.spongepowered.api.entity.living.player.tab.TabList;
 import org.spongepowered.api.event.cause.Cause;
+import org.spongepowered.api.event.message.MessageChannelEvent;
+import org.spongepowered.api.item.inventory.Container;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.network.PlayerConnection;
 import org.spongepowered.api.plugin.PluginContainer;
@@ -46,11 +51,16 @@ import org.spongepowered.api.resourcepack.ResourcePack;
 import org.spongepowered.api.scoreboard.Scoreboard;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.channel.ChatTypeMessageReceiver;
+import org.spongepowered.api.text.channel.MessageReceiver;
+import org.spongepowered.api.text.chat.ChatType;
 import org.spongepowered.api.text.chat.ChatVisibility;
+import org.spongepowered.api.world.WorldBorder;
 
 import java.time.Instant;
 import java.util.Optional;
 import java.util.Set;
+
+import javax.annotation.Nullable;
 
 /**
  * A Player represents the in-game entity of a human playing on a server.
@@ -60,7 +70,7 @@ import java.util.Set;
  * <p>Any methods called on Player that are not on User do not store any data
  * that persists across server restarts.</p>
  */
-public interface Player extends Humanoid, User, Locatable, RemoteSource, Viewer, ChatTypeMessageReceiver {
+public interface Player extends Humanoid, User, RemoteSource, Viewer, ChatTypeMessageReceiver {
 
     /**
      * Returns whether this player has an open inventory at the moment
@@ -68,7 +78,9 @@ public interface Player extends Humanoid, User, Locatable, RemoteSource, Viewer,
      *
      * @return Whether this player is viewing an inventory or not
      */
-    boolean isViewingInventory();
+    default boolean isViewingInventory() {
+        return getOpenInventory().isPresent();
+    }
 
     /**
      * Gets the currently viewed inventory of this player, if it is
@@ -77,25 +89,30 @@ public interface Player extends Humanoid, User, Locatable, RemoteSource, Viewer,
      * @return An inventory if this player is viewing one, otherwise
      * {@link Optional#empty()}
      */
-    Optional<Inventory> getOpenInventory();
+    Optional<Container> getOpenInventory();
 
     /**
      * Opens the given Inventory for the player to view.
      *
      * @param inventory The inventory to view
      * @param cause The {@link Cause} to use when opening the inventory
-     * @throws IllegalArgumentException if a {@link PluginContainer} is not the root of the cause
+     * @return The opened Container if the inventory was opened, otherwise
+     *      {@link Optional#empty()}
+     * @throws IllegalArgumentException if a {@link PluginContainer} is not the
+     *      root of the cause
      */
-    void openInventory(Inventory inventory, Cause cause) throws IllegalArgumentException;
+    Optional<Container> openInventory(Inventory inventory, Cause cause) throws IllegalArgumentException;
 
     /**
      * Closes the currently viewed entity of this player, if it is
      * currently viewing one.
      *
      * @param cause The {@link Cause} to provide when closing the inventory
-     * @throws IllegalArgumentException if a {@link PluginContainer} is not the root of the cause
+     * @return whether or not closing the inventory succeeded
+     * @throws IllegalArgumentException if a {@link PluginContainer} is not the
+     *      root of the cause
      */
-    void closeInventory(Cause cause) throws IllegalArgumentException;
+    boolean closeInventory(Cause cause) throws IllegalArgumentException;
 
     /**
      * Gets the view distance setting of the player. This value represents the
@@ -118,6 +135,26 @@ public interface Player extends Humanoid, User, Locatable, RemoteSource, Viewer,
      * @return True if colors are enabled in chat
      */
     boolean isChatColorsEnabled();
+
+    /**
+     * Simulates a chat message from a player.
+     *
+     * <p>This method sends a message as if it came from this player.
+     * To send a message to this player instead, see
+     * {@link MessageReceiver#sendMessage(Text)} or
+     * {@link ChatTypeMessageReceiver#sendMessage(ChatType, Text)}.</p>
+     *
+     * <p>Commands cannot be sent using this method. To send commands, use
+     * {@link CommandManager#process(CommandSource, String)}.</p>
+     *
+     * <p>If text formatting is not supported in the implementation
+     * it will be displayed as plain text.</p>
+     *
+     * @param message The message to send
+     * @param cause The cause for the message
+     * @return The event that was thrown from sending the message
+     */
+    MessageChannelEvent.Chat simulateChat(Text message, Cause cause);
 
     /**
      * Gets the skin parts that this player has allowed to render.
@@ -191,8 +228,8 @@ public interface Player extends Humanoid, User, Locatable, RemoteSource, Viewer,
     }
 
     /**
-     * Gets the {@link Value} of the {@link Instant} that a {@link Player} joined
-     * the {@link Server} the first time.
+     * Gets the {@link Value} of the {@link Instant} that a {@link Player}
+     * joined the {@link Server} the first time.
      *
      * @return The value for the first time a player joined
      */
@@ -201,8 +238,8 @@ public interface Player extends Humanoid, User, Locatable, RemoteSource, Viewer,
     }
 
     /**
-     * Gets the {@link Value} of the {@link Instant} that a {@link Player} joined
-     * the {@link Server} the last time.
+     * Gets the {@link Value} of the {@link Instant} that a {@link Player}
+     * joined the {@link Server} the last time.
      *
      * @return The value for the last time a player joined
      */
@@ -219,6 +256,7 @@ public interface Player extends Humanoid, User, Locatable, RemoteSource, Viewer,
     default boolean hasPlayedBefore() {
         return !firstPlayed().equals(lastPlayed());
     }
+
     /**
      * Gets a copy of the current {@link DisplayNameData} for this
      * {@link Player}.
@@ -280,9 +318,43 @@ public interface Player extends Humanoid, User, Locatable, RemoteSource, Viewer,
     /**
      * Manually respawns the player.
      *
-     * <p>If the player is not dead, this method will return <code>false</code></p>
+     * <p>If the player is not dead, this method will return <tt>false</tt></p>
      *
      * @return Whether the respawn was successful
      */
     boolean respawnPlayer();
+
+    /**
+     * Gets the {@link Entity} followed by the camera when in the
+     * {@link GameModes#SPECTATOR spectator gamemode}.
+     *
+     * @return The followed entity, if present, empty otherwise
+     */
+    Optional<Entity> getSpectatorTarget();
+
+    /**
+     * Sets the {@link Entity} followed by the camera when in the
+     * {@link GameModes#SPECTATOR spectator gamemode}.
+     *
+     * @param entity The entity to spectate
+     */
+    void setSpectatorTarget(@Nullable Entity entity);
+
+    /**
+     * Gets the {@link WorldBorder} for this player, if present. If no border is
+     * set, an empty {@code Optional} is returned.
+     *
+     * @return The {@code WorldBorder} of this player as an {@code Optional}, if
+     *     present
+     */
+    Optional<WorldBorder> getWorldBorder();
+
+    /**
+     * Sets the {@link WorldBorder} instance for this player to the given world 
+     * border. If {@code null} is passed, the world border is unset.
+     * 
+     * @param border The world border to be used, may be {@code null}
+     * @param cause The cause of the border's change
+     */
+    void setWorldBorder(@Nullable WorldBorder border, Cause cause);
 }

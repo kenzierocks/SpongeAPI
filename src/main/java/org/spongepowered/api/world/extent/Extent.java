@@ -26,6 +26,7 @@ package org.spongepowered.api.world.extent;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.flowpowered.math.vector.Vector2i;
 import com.flowpowered.math.vector.Vector3d;
 import com.flowpowered.math.vector.Vector3i;
 import org.spongepowered.api.block.BlockSnapshot;
@@ -37,12 +38,11 @@ import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.util.AABB;
-import org.spongepowered.api.util.DiscreteTransform3;
 import org.spongepowered.api.util.Identifiable;
 import org.spongepowered.api.util.PositionOutOfBoundsException;
 import org.spongepowered.api.world.BlockChangeFlag;
 import org.spongepowered.api.world.Location;
-import org.spongepowered.api.world.extent.worker.MutableBiomeAreaWorker;
+import org.spongepowered.api.world.extent.worker.MutableBiomeVolumeWorker;
 import org.spongepowered.api.world.extent.worker.MutableBlockVolumeWorker;
 
 import java.util.Collection;
@@ -57,7 +57,7 @@ import javax.annotation.Nullable;
  * A mutable object containing blocks, tile entities, entities, and possibly
  * other game objects.
  */
-public interface Extent extends EntityUniverse, TileEntityVolume, InteractableVolume, MutableBiomeArea, LocationCompositeValueStore, Identifiable,
+public interface Extent extends EntityUniverse, TileEntityVolume, InteractableVolume, MutableBiomeVolume, LocationCompositeValueStore, Identifiable,
     LocationBasePropertyHolder {
 
     /**
@@ -107,6 +107,79 @@ public interface Extent extends EntityUniverse, TileEntityVolume, InteractableVo
     }
 
     /**
+     * Get the y value of the highest block that sunlight can reach in the given
+     * column.
+     *
+     * <p>This method ignores all transparent blocks, providing the highest
+     * opaque block.</p>
+     *
+     * @return The y value of the highest opaque block
+     */
+    int getHighestYAt(int x, int z);
+
+    /**
+     * Get the y value of the highest block that sunlight can reach in the given
+     * column.
+     *
+     * <p>This method ignores all transparent blocks, providing the highest
+     * opaque block.</p>
+     *
+     * @return The y value of the highest opaque block
+     */
+    default int getHighestYAt(Vector2i column) {
+        return this.getHighestYAt(column.getX(), column.getY());
+    }
+
+    /**
+     * Get the {@link Location} of the highest block that sunlight can reach in
+     * the given column.
+     *
+     * <p>This method ignores all transparent blocks, providing the highest
+     * opaque block.</p>
+     *
+     * @param position The column position
+     * @return The highest opaque position
+     */
+    default Vector3i getHighestPositionAt(Vector3i position) {
+        return new Vector3i(position.getX(), getHighestYAt(position.getX(), position.getZ()), position.getZ());
+    }
+
+    /**
+     * Returns the y level that precipitation ends falling in the given column.
+     *
+     * <p>A value is still returned for columns in biomes which do not
+     * receive precipitation.</p>
+     *
+     * @return The y level that precipitation ends
+     */
+    int getPrecipitationLevelAt(int x, int z);
+
+    /**
+     * Returns the y level that precipitation ends falling in the given column.
+     *
+     * <p>A value is still returned for columns in biomes which do not
+     * receive precipitation.</p>
+     *
+     * @return The y level that precipitation ends
+     */
+    default int getPrecipitationLevelAt(Vector2i column) {
+        return this.getPrecipitationLevelAt(column.getX(), column.getY());
+    }
+
+    /**
+     * Returns the position that precipitation ends falling in the column
+     * of the given position.
+     *
+     * <p>A position is still returned for positions in biomes which do not
+     * receive precipitation.</p>
+     *
+     * @return The position that precipitation ends
+     */
+    default Vector3i getPrecipitationLevelAt(Vector3i position) {
+        return new Vector3i(position.getX(), this.getPrecipitationLevelAt(position.getX(), position.getZ()), position.getZ());
+    }
+
+    /**
      * Sets the block at the given position in the world with the provided
      * {@link Cause} will be used for any events thrown. Note that the
      * difference between this an {@link MutableBlockVolume#setBlock(Vector3i, BlockState, Cause)} is
@@ -118,6 +191,7 @@ public interface Extent extends EntityUniverse, TileEntityVolume, InteractableVo
      * @param blockState The block
      * @param flag The various change flags controlling some interactions
      * @param cause The cause to use
+     * @return Whether the block change was successful
      * @throws PositionOutOfBoundsException If the position is outside of the
      *         bounds of the volume
      */
@@ -139,6 +213,7 @@ public interface Extent extends EntityUniverse, TileEntityVolume, InteractableVo
      * @param blockState The block
      * @param flag The various change flags controlling some interactions
      * @param cause The cause to use
+     * @return Whether the block change was successful
      * @throws PositionOutOfBoundsException If the position is outside of the
      *         bounds of the volume
      */
@@ -156,6 +231,7 @@ public interface Extent extends EntityUniverse, TileEntityVolume, InteractableVo
      * @param type The block type
      * @param flag The various change flags controlling some interactions
      * @param cause The cause to use
+     * @return Whether the block change was successful
      * @throws PositionOutOfBoundsException If the position is outside of the
      *         bounds of the volume
      */
@@ -177,6 +253,7 @@ public interface Extent extends EntityUniverse, TileEntityVolume, InteractableVo
      * @param type The block
      * @param flag The various change flags controlling some interactions
      * @param cause The cause to use
+     * @return Whether the block change was successful
      * @throws PositionOutOfBoundsException If the position is outside of the
      *         bounds of the volume
      */
@@ -185,7 +262,7 @@ public interface Extent extends EntityUniverse, TileEntityVolume, InteractableVo
     }
 
     /**
-     * Get a snapshot of this block at the current point in time.
+     * Gets a snapshot of this block at the current point in time.
      *
      * <p>A snapshot is disconnected from the {@link Extent} that it was taken
      * from so changes to the original block do not affect the snapshot.</p>
@@ -198,7 +275,7 @@ public interface Extent extends EntityUniverse, TileEntityVolume, InteractableVo
     }
 
     /**
-     * Get a snapshot of this block at the current point in time.
+     * Gets a snapshot of this block at the current point in time.
      *
      * <p>A snapshot is disconnected from the {@link Extent} that it was taken
      * from so changes to the original block do not affect the snapshot.</p>
@@ -243,6 +320,7 @@ public interface Extent extends EntityUniverse, TileEntityVolume, InteractableVo
      * @param force If true, forces block state to be set even if the
      *        {@link BlockType} does not match the snapshot one.
      * @param flag The various change flags controlling some interactions
+     * @param cause The cause of this operation
      * @return true if the restore was successful, false otherwise
      */
     default boolean restoreSnapshot(Vector3i position, BlockSnapshot snapshot, boolean force, BlockChangeFlag flag, Cause cause) {
@@ -353,28 +431,8 @@ public interface Extent extends EntityUniverse, TileEntityVolume, InteractableVo
      */
     Extent getExtentView(Vector3i newMin, Vector3i newMax);
 
-    /**
-     * Returns a new extent that is viewed through some transformation. This
-     * does not copy the data, it only provides a new view of the extent.
-     *
-     * @param transform The transformation to be applied
-     * @return The new extent with the transform
-     */
-    Extent getExtentView(DiscreteTransform3 transform);
-
-    /**
-     * Returns a new extent that is translated so that
-     * {@link Extent#getBlockMin()} returns {@link Vector3i#ZERO}. This does not
-     * copy the data, it only provides a new view of the extent.
-     *
-     * @return The new extent its minimum at zero
-     */
-    default Extent getRelativeExtentView() {
-        return getExtentView(DiscreteTransform3.fromTranslation(getBlockMin().negate()));
-    }
-
     @Override
-    MutableBiomeAreaWorker<? extends Extent> getBiomeWorker();
+    MutableBiomeVolumeWorker<? extends Extent> getBiomeWorker();
 
     @Override
     MutableBlockVolumeWorker<? extends Extent> getBlockWorker(Cause cause);
@@ -483,9 +541,9 @@ public interface Extent extends EntityUniverse, TileEntityVolume, InteractableVo
      * Gets the bounding box used to select blocks, which appears
      * as a black outline on a vanilla client.
      *
-     * @param x The x coordinate of the block from which to get the selection box
-     * @param y The y coordinate of the block from which to get the selection box
-     * @param z The z coordinate of the block from which to get the selection box
+     * @param x The x coord of the block from which to get the selection box
+     * @param y The y coord of the block from which to get the selection box
+     * @param z The z coord of the block from which to get the selection box
      * @return The selection box
      */
     Optional<AABB> getBlockSelectionBox(int x, int y, int z);
@@ -510,9 +568,9 @@ public interface Extent extends EntityUniverse, TileEntityVolume, InteractableVo
      */
     default Set<AABB> getIntersectingCollisionBoxes(Entity owner) {
         checkNotNull(owner, "owner");
-        return owner.getBoundingBox().
-            map(box -> getIntersectingCollisionBoxes(owner, box)).
-            orElse(Collections.emptySet());
+        return owner.getBoundingBox()
+            .map(box -> getIntersectingCollisionBoxes(owner, box))
+            .orElse(Collections.emptySet());
     }
 
     /**
@@ -531,8 +589,8 @@ public interface Extent extends EntityUniverse, TileEntityVolume, InteractableVo
      * The archetype's volume will be shifted such that the position given in
      * the origin will be the origin of the volume.
      *
-     * @param min The minimum point of the area to copy
-     * @param max The maximum point of the area to copy
+     * @param min The minimum point of the volume to copy
+     * @param max The maximum point of the volume to copy
      * @param origin The eventual origin on the new archetype volume
      * @return The archetype volume
      */

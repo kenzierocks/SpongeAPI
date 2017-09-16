@@ -31,11 +31,9 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.DataContainer;
 import org.spongepowered.api.data.DataSerializable;
 import org.spongepowered.api.data.DataView;
-import org.spongepowered.api.data.MemoryDataContainer;
 import org.spongepowered.api.data.Queries;
 import org.spongepowered.api.data.manipulator.mutable.entity.RespawnLocationData;
 import org.spongepowered.api.data.persistence.AbstractDataBuilder;
-import org.spongepowered.api.data.persistence.DataBuilder;
 import org.spongepowered.api.data.persistence.InvalidDataException;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
@@ -43,6 +41,8 @@ import org.spongepowered.api.world.World;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+
+import javax.annotation.Nullable;
 
 /**
  * Represents a position for a player to respawn in in a particular world.
@@ -65,8 +65,8 @@ public final class RespawnLocation implements DataSerializable {
     private final boolean forced;
 
     RespawnLocation(Builder builder) {
-        this.worldId = builder.world;
-        this.position = builder.position;
+        this.worldId = checkNotNull(builder.world, "World UUID");
+        this.position = checkNotNull(builder.position, "Position");
         this.forced = builder.forced;
     }
 
@@ -89,7 +89,6 @@ public final class RespawnLocation implements DataSerializable {
     }
 
     /**
-     *
      * Gets whether the spawn position is forced in the given world, if
      * available. A forced position will spawn the player there even if a bed is
      * missing or obstructed.
@@ -121,7 +120,7 @@ public final class RespawnLocation implements DataSerializable {
 
     @Override
     public DataContainer toContainer() {
-        return new MemoryDataContainer()
+        return DataContainer.createNew()
                 .set(Queries.CONTENT_VERSION, getContentVersion())
                 .set(Queries.POSITION_X, getPosition().getX())
                 .set(Queries.POSITION_Y, getPosition().getY())
@@ -139,9 +138,9 @@ public final class RespawnLocation implements DataSerializable {
             return false;
         }
         RespawnLocation that = (RespawnLocation) o;
-        return this.forced == that.forced &&
-                Objects.equals(this.worldId, that.worldId) &&
-                Objects.equals(this.position, that.position);
+        return this.forced == that.forced
+                && Objects.equals(this.worldId, that.worldId)
+                && Objects.equals(this.position, that.position);
     }
 
     @Override
@@ -151,7 +150,7 @@ public final class RespawnLocation implements DataSerializable {
 
     @Override
     public String toString() {
-        return com.google.common.base.Objects.toStringHelper(this)
+        return com.google.common.base.MoreObjects.toStringHelper(this)
                 .add("worldId", this.worldId)
                 .add("position", this.position)
                 .add("forced", this.forced)
@@ -161,12 +160,15 @@ public final class RespawnLocation implements DataSerializable {
     /**
      * A helper class to build {@link RespawnLocation}s.
      */
-    public static final class Builder extends AbstractDataBuilder<RespawnLocation> implements DataBuilder<RespawnLocation> {
+    public static final class Builder extends AbstractDataBuilder<RespawnLocation> {
 
-        UUID world;
-        Vector3d position;
+        @Nullable UUID world;
+        @Nullable Vector3d position;
         boolean forced = false;
 
+        /**
+         * Creates a new {@link Builder}.
+         */
         public Builder() {
             super(RespawnLocation.class, 1);
         }
@@ -267,6 +269,11 @@ public final class RespawnLocation implements DataSerializable {
             return this;
         }
 
+        /**
+         * Creates a new {@link RespawnLocation} from this builder.
+         *
+         * @return The new respawn location
+         */
         public RespawnLocation build() {
             checkNotNull(this.world, "World id cannot be null!");
             checkNotNull(this.position, "Position cannot be null!");

@@ -62,7 +62,7 @@ public interface ItemType extends CatalogType, Translatable, GameDictionary.Entr
     String getName();
 
     /**
-     * Get the default maximum quantity for
+     * Gets the default maximum quantity for
      * {@link ItemStack}s of this item.
      *
      * @return Max stack quantity
@@ -92,7 +92,7 @@ public interface ItemType extends CatalogType, Translatable, GameDictionary.Entr
     
     @Override
     default boolean matches(ItemStack stack) {
-        return checkNotNull(stack, "stack").getItem().equals(this);
+        return checkNotNull(stack, "stack").getType().equals(this);
     }
 
     @Override

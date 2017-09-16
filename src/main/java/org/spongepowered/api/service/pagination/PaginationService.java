@@ -24,15 +24,13 @@
  */
 package org.spongepowered.api.service.pagination;
 
-import org.spongepowered.api.text.channel.MessageReceiver;
-
 /**
  * This service allows pagination of output to users.
  */
 public interface PaginationService {
 
     /**
-     * Get a new pagination builder to send paginated output to a player.
+     * Gets a new pagination builder to send paginated output to a player.
      *
      * @return The pagination builder
      */

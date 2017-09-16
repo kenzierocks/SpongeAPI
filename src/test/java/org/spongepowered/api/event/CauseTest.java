@@ -29,7 +29,6 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import org.junit.Test;
@@ -41,7 +40,6 @@ import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.cause.NamedCause;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -71,7 +69,7 @@ public class CauseTest {
     @Test(expected = NullPointerException.class)
     public void testWithNullCause() {
         final Cause old = Cause.source("foo").build();
-        final Cause newCause = old.with(null);
+        old.with(null);
     }
 
     @Test
@@ -133,7 +131,7 @@ public class CauseTest {
         final Player playerB = Mockito.mock(Player.class);
         final NamedCause namedA = NamedCause.of(NamedCause.OWNER, player);
         final NamedCause namedB = NamedCause.of(NamedCause.OWNER, playerB);
-        final Cause cause = Cause.of(namedA, namedB);
+        Cause.of(namedA, namedB);
         // The line above should throw an exception!
     }
 
@@ -201,7 +199,6 @@ public class CauseTest {
         User user = Mockito.mock(User.class);
         User owner = Mockito.mock(User.class);
         final Cause enhanced = cause.with(NamedCause.of(NamedCause.NOTIFIER, user)).with(NamedCause.of(NamedCause.OWNER, owner));
-        final Map<String, Object> causes = enhanced.getNamedCauses();
 
         final Optional<User> optional = enhanced.first(User.class);
         assertThat(optional.isPresent(), is(true));
@@ -212,7 +209,12 @@ public class CauseTest {
     @Test
     public void testListedArray() {
         final List<String> fooList = ImmutableList.of("foo", "bar", "baz", "floof");
-        final Cause cause = Cause.builder().suggestNamed("foo", "foo").suggestNamed("bar", "bar").suggestNamed("baz", "baz").suggestNamed("floof", "floof").build();
+        final Cause cause = Cause.builder()
+                .suggestNamed("foo", "foo")
+                .suggestNamed("bar", "bar")
+                .suggestNamed("baz", "baz")
+                .suggestNamed("floof", "floof")
+                .build();
         final List<String> stringList = cause.allOf(String.class);
         assertThat(stringList.isEmpty(), is(false));
         assertThat(stringList.equals(fooList), is(true));

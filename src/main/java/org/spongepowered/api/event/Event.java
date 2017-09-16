@@ -26,8 +26,8 @@ package org.spongepowered.api.event;
 
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.impl.AbstractEvent;
-import org.spongepowered.api.eventgencore.annotation.AbsoluteSortPosition;
-import org.spongepowered.api.eventgencore.annotation.ImplementedBy;
+import org.spongepowered.api.util.annotation.eventgen.AbsoluteSortPosition;
+import org.spongepowered.api.util.annotation.eventgen.ImplementedBy;
 
 /**
  * An event called within Sponge.
@@ -37,8 +37,9 @@ import org.spongepowered.api.eventgencore.annotation.ImplementedBy;
  */
 @ImplementedBy(value = AbstractEvent.class, priority = Integer.MIN_VALUE)
 public interface Event {
+
     /**
-     * Get the cause for the event.
+     * Gets the cause for the event.
      *
      * @return The last cause
      */

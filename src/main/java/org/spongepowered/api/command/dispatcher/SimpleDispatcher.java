@@ -25,8 +25,8 @@
 package org.spongepowered.api.command.dispatcher;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static org.spongepowered.api.util.SpongeApiTranslationHelper.t;
 import static org.spongepowered.api.command.CommandMessageFormatting.SPACE_TEXT;
+import static org.spongepowered.api.util.SpongeApiTranslationHelper.t;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
@@ -35,12 +35,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
-import org.spongepowered.api.text.Text;
-import org.spongepowered.api.text.action.TextActions;
-import org.spongepowered.api.text.format.TextColors;
-import org.spongepowered.api.text.format.TextStyles;
-import org.spongepowered.api.util.GuavaCollectors;
-import org.spongepowered.api.util.StartsWithPredicate;
 import org.spongepowered.api.command.CommandCallable;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandMapping;
@@ -49,6 +43,11 @@ import org.spongepowered.api.command.CommandNotFoundException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.ImmutableCommandMapping;
+import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.action.TextActions;
+import org.spongepowered.api.text.format.TextColors;
+import org.spongepowered.api.text.format.TextStyles;
+import org.spongepowered.api.util.StartsWithPredicate;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
@@ -95,7 +94,8 @@ public final class SimpleDispatcher implements Dispatcher {
     /**
      * Creates a new dispatcher with a specific disambiguator.
      *
-     * @param disambiguatorFunc Function that returns the preferred command if multiple exist for a given alias
+     * @param disambiguatorFunc Function that returns the preferred command if
+     *     multiple exist for a given alias
      */
     public SimpleDispatcher(Disambiguator disambiguatorFunc) {
         this.disambiguatorFunc = disambiguatorFunc;
@@ -114,7 +114,8 @@ public final class SimpleDispatcher implements Dispatcher {
      *
      * @param callable The command
      * @param alias An array of aliases
-     * @return The registered command mapping, unless no aliases could be registered
+     * @return The registered command mapping, unless no aliases could be
+     *     registered
      */
     public Optional<CommandMapping> register(CommandCallable callable, String... alias) {
         checkNotNull(alias, "alias");
@@ -134,7 +135,8 @@ public final class SimpleDispatcher implements Dispatcher {
      *
      * @param callable The command
      * @param aliases A list of aliases
-     * @return The registered command mapping, unless no aliases could be registered
+     * @return The registered command mapping, unless no aliases could be
+     *     registered
      */
     public Optional<CommandMapping> register(CommandCallable callable, List<String> aliases) {
         return register(callable, aliases, Function.identity());
@@ -157,7 +159,8 @@ public final class SimpleDispatcher implements Dispatcher {
      * @param callable The command
      * @param aliases A list of aliases
      * @param callback The callback
-     * @return The registered command mapping, unless no aliases could be registered
+     * @return The registered command mapping, unless no aliases could
+     *     be registered
      */
     public synchronized Optional<CommandMapping> register(CommandCallable callable, List<String> aliases,
             Function<List<String>, List<String>> callback) {
@@ -178,9 +181,8 @@ public final class SimpleDispatcher implements Dispatcher {
             }
 
             return Optional.of(mapping);
-        } else {
-            return Optional.empty();
         }
+        return Optional.empty();
     }
 
     /**
@@ -341,7 +343,7 @@ public final class SimpleDispatcher implements Dispatcher {
         final String[] argSplit = arguments.split(" ", 2);
         Optional<CommandMapping> cmdOptional = get(argSplit[0], src);
         if (argSplit.length == 1) {
-            return filterCommands(src).stream().filter(new StartsWithPredicate(argSplit[0])).collect(GuavaCollectors.toImmutableList());
+            return filterCommands(src, argSplit[0]).stream().collect(ImmutableList.toImmutableList());
         } else if (!cmdOptional.isPresent()) {
             return ImmutableList.of();
         }
@@ -390,6 +392,12 @@ public final class SimpleDispatcher implements Dispatcher {
 
     private Set<String> filterCommands(final CommandSource src) {
         return Multimaps.filterValues(this.commands, input -> input.getCallable().testPermission(src)).keys().elementSet();
+    }
+
+    // Filter out commands by String first
+    private Set<String> filterCommands(final CommandSource src, String start) {
+        ListMultimap<String, CommandMapping> map = Multimaps.filterKeys(this.commands, input -> input != null && input.toLowerCase().startsWith(start.toLowerCase()));
+        return Multimaps.filterValues(map, input -> input.getCallable().testPermission(src)).keys().elementSet();
     }
 
     /**

@@ -26,6 +26,7 @@ package org.spongepowered.api.text.format;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import org.spongepowered.api.CatalogType;
 import org.spongepowered.api.text.Text;
@@ -48,7 +49,7 @@ import javax.annotation.Nullable;
  *
  * <p>Each individual style within a TextStyle, e.g. bold, italic is not just a
  * boolean, but an {@code Optional&lt;Boolean&gt;} since it can be unapplied
- * (or, in Optional terms, "absent"). These styles will hereafter be referred to
+ * (or, in Optional terms, "empty"). These styles will hereafter be referred to
  * as properties.<br> See the {@link OptBool} utility class for working with
  * properties.</p>
  *
@@ -326,11 +327,11 @@ public class TextStyle implements TextElement {
     public TextStyle negate() {
         // Do a negation of each property
         return new TextStyle(
-                propNegate(this.obfuscated),
                 propNegate(this.bold),
-                propNegate(this.strikethrough),
+                propNegate(this.italic),
                 propNegate(this.underline),
-                propNegate(this.italic)
+                propNegate(this.strikethrough),
+                propNegate(this.obfuscated)
         );
     }
 
@@ -438,7 +439,7 @@ public class TextStyle implements TextElement {
 
     @Override
     public String toString() {
-        return Objects.toStringHelper(TextStyle.class)
+        return MoreObjects.toStringHelper(TextStyle.class)
                 .omitNullValues()
                 .add("bold", this.bold.orElse(null))
                 .add("italic", this.italic.orElse(null))
@@ -469,9 +470,8 @@ public class TextStyle implements TextElement {
     private static Optional<Boolean> propNegate(Optional<Boolean> prop) {
         if (prop.isPresent()) {
             return OptBool.of(!prop.get());
-        } else {
-            return OptBool.ABSENT;
         }
+        return OptBool.ABSENT;
     }
 
     /**

@@ -59,12 +59,12 @@ public final class TextSerializers {
      * @deprecated Legacy formatting codes are being phased out of Minecraft
      */
     @Deprecated
-    public static final FormattingCodeTextSerializer LEGACY_FORMATTING_CODE
-            = DummyObjectProvider.createFor(FormattingCodeTextSerializer.class, "LEGACY_FORMATTING_CODE");
+    public static final FormattingCodeTextSerializer LEGACY_FORMATTING_CODE = DummyObjectProvider
+            .createFor(FormattingCodeTextSerializer.class, "LEGACY_FORMATTING_CODE");
 
     /**
      * A {@link FormattingCodeTextSerializer} for a simple {@link Text}
-     * representatior similar to {@link #LEGACY_FORMATTING_CODE} but using the
+     * representation similar to {@link #LEGACY_FORMATTING_CODE} but using the
      * formatting character {@code &} instead of the internal one.
      *
      * <p>Example of a string parsed by this {@link TextSerializer}
@@ -79,19 +79,14 @@ public final class TextSerializers {
      *
      * @see FormattingCodeTextSerializer
      */
-    public static final FormattingCodeTextSerializer FORMATTING_CODE
-            = DummyObjectProvider.createFor(FormattingCodeTextSerializer.class, "FORMATTING_CODE");
+    public static final FormattingCodeTextSerializer FORMATTING_CODE = DummyObjectProvider
+            .createFor(FormattingCodeTextSerializer.class, "FORMATTING_CODE");
 
     /**
      * The {@link TextSerializer} for Mojang's JSON (<i>Mojangson</i>)
      * representation of a {@link Text} object.
      */
     public static final TextSerializer JSON = DummyObjectProvider.createFor(TextSerializer.class, "JSON");
-
-    /**
-     * The {@link TextSerializer} for Sponge's TextXML format.
-     */
-    public static final TextSerializer TEXT_XML = DummyObjectProvider.createFor(TextSerializer.class, "TEXT_XML");
 
     /**
      * Returns a representation that accepts and outputs formatting codes, using

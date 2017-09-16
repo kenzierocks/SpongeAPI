@@ -25,15 +25,15 @@
 package org.spongepowered.api.event.cause.entity.damage;
 
 import org.spongepowered.api.data.meta.ItemEnchantment;
+import org.spongepowered.api.effect.potion.PotionEffect;
+import org.spongepowered.api.effect.potion.PotionEffectType;
+import org.spongepowered.api.effect.potion.PotionEffectTypes;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.cause.entity.damage.source.FallingBlockDamageSource;
 import org.spongepowered.api.item.Enchantment;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
-import org.spongepowered.api.effect.potion.PotionEffect;
-import org.spongepowered.api.effect.potion.PotionEffectType;
-import org.spongepowered.api.effect.potion.PotionEffectTypes;
 import org.spongepowered.api.util.generator.dummy.DummyObjectProvider;
 import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.difficulty.Difficulty;
@@ -76,12 +76,6 @@ public final class DamageModifierTypes {
     public static final DamageModifierType ATTACK_COOLDOWN = DummyObjectProvider.createFor(DamageModifierType.class, "ATTACK_COOLDOWN");
 
     /**
-     * Represents a {@link DamageModifier} that will reduce damage due to
-     * an attempt at blocking.
-     */
-    public static final DamageModifierType BLOCKING = DummyObjectProvider.createFor(DamageModifierType.class, "BLOCKING");
-
-    /**
      * Represents the {@link DamageModifier} that will modify damage output
      * based on the fact that the attacking source is critically hitting the
      * target.
@@ -97,13 +91,15 @@ public final class DamageModifierTypes {
      * a {@link PotionEffect} including the amplifier and duration, signifying
      * that the {@link PotionEffectType} is modifying the incoming damage.</p>
      */
-    public static final DamageModifierType DEFENSIVE_POTION_EFFECT = DummyObjectProvider.createFor(DamageModifierType.class, "DEFENSIVE_POTION_EFFECT");
+    public static final DamageModifierType DEFENSIVE_POTION_EFFECT = DummyObjectProvider
+            .createFor(DamageModifierType.class, "DEFENSIVE_POTION_EFFECT");
 
     /**
      * Represents a {@link DamageModifier} that enhances damage based on the
      * current {@link Difficulty} of the {@link World}.
      */
-    public static final DamageModifierType DIFFICULTY = DummyObjectProvider.createFor(DamageModifierType.class, "DIFFICULTY");
+    public static final DamageModifierType DIFFICULTY = DummyObjectProvider
+            .createFor(DamageModifierType.class, "DIFFICULTY");
 
     /**
      * Represents the {@link DamageModifier} that will modify damage from
@@ -136,7 +132,20 @@ public final class DamageModifierTypes {
      * Represents the {@link DamageModifier} that will increase damage from
      * a {@link PotionEffect} affecting the attacker.
      */
-    public static final DamageModifierType OFFENSIVE_POTION_EFFECT = DummyObjectProvider.createFor(DamageModifierType.class, "OFFENSIVE_POTION_EFFECT");
+    public static final DamageModifierType OFFENSIVE_POTION_EFFECT = DummyObjectProvider
+            .createFor(DamageModifierType.class, "OFFENSIVE_POTION_EFFECT");
+
+    /**
+     * Represents a {@link DamageModifier} that will reduce damage due to
+     * using a shield.
+     */
+    public static final DamageModifierType SHIELD = DummyObjectProvider.createFor(DamageModifierType.class, "SHIELD");
+
+    /**
+     * Represents a {@link DamageModifier} that is applied for a sweaping
+     * attack.
+     */
+    public static final DamageModifierType SWEAPING = DummyObjectProvider.createFor(DamageModifierType.class, "SWEAPING");
 
     /**
      * Represents the {@link DamageModifier} that will modify damage from

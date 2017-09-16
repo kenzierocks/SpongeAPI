@@ -65,6 +65,14 @@ public interface BlockType extends CatalogType, Translatable, PropertyHolder {
     BlockState getDefaultState();
 
     /**
+     * Gets a {@link Collection} of all {@link BlockState}s for this
+     * {@link BlockType}.
+     *
+     * @return An immutable collection of all block states for this block type
+     */
+    Collection<BlockState> getAllBlockStates();
+
+    /**
      * Return the {@link ItemType} that represents this block.
      * @return The item type or {@link Optional#empty()} otherwise
      */
@@ -105,4 +113,11 @@ public interface BlockType extends CatalogType, Translatable, PropertyHolder {
      * @return The block trait, if available
      */
     Optional<BlockTrait<?>> getTrait(String blockTrait);
+
+    /**
+     * Gets the {@link BlockSoundGroup} for this block.
+     *
+     * @return This block's sound group.
+     */
+    BlockSoundGroup getSoundGroup();
 }

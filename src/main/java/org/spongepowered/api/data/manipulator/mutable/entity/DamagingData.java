@@ -24,14 +24,15 @@
  */
 package org.spongepowered.api.data.manipulator.mutable.entity;
 
+import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.data.manipulator.DataManipulator;
 import org.spongepowered.api.data.manipulator.immutable.entity.ImmutableDamagingData;
 import org.spongepowered.api.data.value.mutable.MapValue;
 import org.spongepowered.api.data.value.mutable.MutableBoundedValue;
 import org.spongepowered.api.entity.EntityType;
 import org.spongepowered.api.entity.living.Living;
-import org.spongepowered.api.entity.projectile.arrow.Arrow;
 import org.spongepowered.api.entity.projectile.Projectile;
+import org.spongepowered.api.entity.projectile.arrow.Arrow;
 
 /**
  * A {@link DataManipulator} for an owner that will deal a certain amount of
@@ -45,6 +46,7 @@ public interface DamagingData extends DataManipulator<DamagingData, ImmutableDam
      * if hit.
      *
      * @return The damage to deal
+     * @see Keys#ATTACK_DAMAGE
      */
     MutableBoundedValue<Double> damage();
 
@@ -57,8 +59,8 @@ public interface DamagingData extends DataManipulator<DamagingData, ImmutableDam
      * defined from {@link #damage()}.</p>
      *
      * @return The immutable map value for the entity damage values
+     * @see Keys#DAMAGE_ENTITY_MAP
      */
     MapValue<EntityType, Double> damageForEntity();
-
 
 }

@@ -28,7 +28,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
-import com.flowpowered.math.vector.Vector2i;
 import com.flowpowered.math.vector.Vector3d;
 import com.flowpowered.math.vector.Vector3i;
 import com.google.common.base.Objects;
@@ -43,7 +42,6 @@ import org.spongepowered.api.data.DataContainer;
 import org.spongepowered.api.data.DataHolder;
 import org.spongepowered.api.data.DataTransactionResult;
 import org.spongepowered.api.data.DataView;
-import org.spongepowered.api.data.MemoryDataContainer;
 import org.spongepowered.api.data.Property;
 import org.spongepowered.api.data.Queries;
 import org.spongepowered.api.data.key.Key;
@@ -52,9 +50,14 @@ import org.spongepowered.api.data.merge.MergeFunction;
 import org.spongepowered.api.data.persistence.InvalidDataException;
 import org.spongepowered.api.data.value.BaseValue;
 import org.spongepowered.api.data.value.immutable.ImmutableValue;
+import org.spongepowered.api.entity.Entity;
+import org.spongepowered.api.entity.EntityType;
 import org.spongepowered.api.event.cause.Cause;
+import org.spongepowered.api.event.cause.entity.spawn.SpawnCause;
+import org.spongepowered.api.event.entity.SpawnEntityEvent;
 import org.spongepowered.api.util.Direction;
 import org.spongepowered.api.world.biome.BiomeType;
+import org.spongepowered.api.world.extent.EntityUniverse;
 import org.spongepowered.api.world.extent.Extent;
 
 import java.lang.ref.WeakReference;
@@ -94,7 +97,7 @@ public final class Location<E extends Extent> implements DataHolder {
     @Nullable
     private Vector3i chunkPosition = null;
     @Nullable
-    private Vector2i biomePosition = null;
+    private Vector3i biomePosition = null;
 
     /**
      * Create a new instance.
@@ -143,7 +146,7 @@ public final class Location<E extends Extent> implements DataHolder {
     }
 
     /**
-     * Get the underlying extent.
+     * Gets the underlying extent.
      *
      * <p>Note: This can be null if the {@link Extent} is unloaded and garbage
      * collected.</p>
@@ -160,7 +163,7 @@ public final class Location<E extends Extent> implements DataHolder {
     }
 
     /**
-     * Get the underlying position.
+     * Gets the underlying position.
      *
      * @return The underlying position
      */
@@ -173,7 +176,7 @@ public final class Location<E extends Extent> implements DataHolder {
     }
 
     /**
-     * Get the underlying block position.
+     * Gets the underlying block position.
      *
      * @return The underlying block position
      */
@@ -186,7 +189,7 @@ public final class Location<E extends Extent> implements DataHolder {
     }
 
     /**
-     * Get the underlying chunk position.
+     * Gets the underlying chunk position.
      *
      * @return The underlying chunk position
      */
@@ -202,15 +205,16 @@ public final class Location<E extends Extent> implements DataHolder {
      *
      * @return The underlying biome position
      */
-    public Vector2i getBiomePosition() {
+    public Vector3i getBiomePosition() {
         if (this.biomePosition == null) {
-            this.biomePosition = getBlockPosition().toVector2(true);
+            final Vector3i blockPosition = getBlockPosition();
+            this.biomePosition = new Vector3i(blockPosition.getX(), 0, blockPosition.getZ());
         }
         return this.biomePosition;
     }
 
     /**
-     * Get the X component of this instance's position.
+     * Gets the X component of this instance's position.
      *
      * @return The x component
      */
@@ -219,7 +223,7 @@ public final class Location<E extends Extent> implements DataHolder {
     }
 
     /**
-     * Get the Y component of this instance's position.
+     * Gets the Y component of this instance's position.
      *
      * @return The y component
      */
@@ -228,7 +232,7 @@ public final class Location<E extends Extent> implements DataHolder {
     }
 
     /**
-     * Get the Z component of this instance's position.
+     * Gets the Z component of this instance's position.
      *
      * @return The z component
      */
@@ -237,7 +241,7 @@ public final class Location<E extends Extent> implements DataHolder {
     }
 
     /**
-     * Get the floored X component of this instance's position.
+     * Gets the floored X component of this instance's position.
      *
      * @return The floored x component
      */
@@ -246,7 +250,7 @@ public final class Location<E extends Extent> implements DataHolder {
     }
 
     /**
-     * Get the floored Y component of this instance's position.
+     * Gets the floored Y component of this instance's position.
      *
      * @return The floored y component
      */
@@ -255,7 +259,7 @@ public final class Location<E extends Extent> implements DataHolder {
     }
 
     /**
-     * Get the floored Z component of this instance's position.
+     * Gets the floored Z component of this instance's position.
      *
      * @return The floored z component
      */
@@ -295,6 +299,24 @@ public final class Location<E extends Extent> implements DataHolder {
     }
 
     /**
+     * Gets a {@link LocatableBlock} if the parent {@link Extent} of this
+     * {@link Location} is a {@link World}.
+     *
+     * @return The locatable block of this location, if available
+     */
+    public Optional<LocatableBlock> getLocatableBlock() {
+        return getExtent() instanceof World
+               ? Optional.of(
+                LocatableBlock
+                        .builder()
+                        .world((World) getExtent())
+                        .position(this.getBlockPosition())
+                        .build()
+                )
+               : Optional.empty();
+    }
+
+    /**
      * Create a new instance with a new extent.
      *
      * @param extent The new extent
@@ -317,6 +339,20 @@ public final class Location<E extends Extent> implements DataHolder {
     public Location<E> setPosition(Vector3d position) {
         checkNotNull(position, "position");
         if (position == getPosition()) {
+            return this;
+        }
+        return new Location<>(getExtent(), position);
+    }
+
+    /**
+     * Create a new instance with a new block position.
+     *
+     * @param position The new position
+     * @return A new instance
+     */
+    public Location<E> setBlockPosition(Vector3i position) {
+        checkNotNull(position, "position");
+        if (position == getBlockPosition()) {
             return this;
         }
         return new Location<>(getExtent(), position);
@@ -432,7 +468,7 @@ public final class Location<E extends Extent> implements DataHolder {
      * @param <T> The return type of the mapper
      * @return The results of the mapping
      */
-    public <T> T mapBiome(BiFunction<E, Vector2i, T> mapper) {
+    public <T> T mapBiome(BiFunction<E, Vector3i, T> mapper) {
         return mapper.apply(getExtent(), getBiomePosition());
     }
 
@@ -475,7 +511,7 @@ public final class Location<E extends Extent> implements DataHolder {
     }
 
     /**
-     * Get the base type of block.
+     * Gets the base type of block.
      *
      * <p>The type does not include block data such as the contents of
      * inventories.</p>
@@ -487,7 +523,7 @@ public final class Location<E extends Extent> implements DataHolder {
     }
 
     /**
-     * Get the {@link BlockState} for this position.
+     * Gets the {@link BlockState} for this position.
      *
      * @return The block state
      */
@@ -499,7 +535,7 @@ public final class Location<E extends Extent> implements DataHolder {
      * Checks for whether the block at this position contains tile entity data.
      *
      * @return True if the block at this position has tile entity data, false
-     * otherwise
+     *      otherwise
      */
     public boolean hasTileEntity() {
         return getExtent().getTileEntity(getBlockPosition()).isPresent();
@@ -595,6 +631,80 @@ public final class Location<E extends Extent> implements DataHolder {
         return getExtent().setBlockType(getBlockPosition(), BlockTypes.AIR, BlockChangeFlag.ALL, cause);
     }
 
+    /**
+     * Create an entity instance at the given position.
+     *
+     * <p>Creating an entity does not spawn the entity into the world. An entity
+     * created means the entity can be spawned at the given location. If
+     * {@link Optional#empty()} was returned, the entity is not able to spawn at
+     * the given location. Furthermore, this allows for the {@link Entity} to be
+     * customized further prior to traditional "ticking" and processing by core
+     * systems.</p>
+     *
+     * @param type The type
+     * @return An entity, if one was created
+     * @throws IllegalArgumentException If the position or entity type is not
+     *     valid to create
+     * @throws IllegalStateException If a constructor cannot be found
+     * @see EntityUniverse#createEntity(EntityType, Vector3d)
+     */
+    public Entity createEntity(EntityType type) {
+        return this.getExtent().createEntity(type, this.getPosition());
+    }
+
+    /**
+     * Spawns an {@link Entity} using the already set properties (extent,
+     * position, rotation) and applicable {@link DataManipulator}s with the
+     * specified {@link Cause} for spawning the entity.
+     *
+     * <p>Note that for the {@link Cause} to be useful in the expected
+     * {@link SpawnEntityEvent}, a {@link SpawnCause} should be provided in the
+     * {@link Cause} for other plugins to understand and have finer control over
+     * the event.</p>
+     *
+     * <p>The requirements involve that all necessary setup of states and data
+     * is already preformed on the entity retrieved from the various
+     * {@link EntityUniverse#createEntity(EntityType,Vector3d)} methods. Calling
+     * this will make the now-spawned entity able to be processed by various
+     * systems.</p>
+     *
+     * <p>If the entity was unable to spawn, the entity is not removed, but it
+     * should be taken note that there can be many reasons for a failure.</p>
+     *
+     * @param entity The entity to spawn
+     * @param cause The cause for the entity spawn
+     * @return True if successful, false if not
+     * @see EntityUniverse#spawnEntity(Entity, Cause)
+     */
+    public boolean spawnEntity(Entity entity, Cause cause) {
+        return this.getExtent().spawnEntity(entity, cause);
+    }
+
+    /**
+     * Similar to {@link #spawnEntity(Entity, Cause)} except where multiple
+     * entities can be attempted to be spawned with a customary {@link Cause}.
+     * The recommended use is to easily process the entity spawns without
+     * interference with the cause tracking system.
+     *
+     * @param entities The entities to be spawned
+     * @param cause The cause to be associated with the entities spawning
+     * @return True if any of the entities were successfully spawned
+     * @see EntityUniverse#spawnEntities(Iterable, Cause)
+     */
+    public boolean spawnEntities(Iterable<? extends Entity> entities, Cause cause) {
+        return this.getExtent().spawnEntities(entities, cause);
+    }
+
+    /**
+     * Gets the highest {@link Location} at this location.
+     *
+     * @return The highest location at this location
+     * @see Extent#getHighestPositionAt(Vector3i)
+     */
+    public Location<E> asHighestLocation() {
+        return this.setBlockPosition(this.getExtent().getHighestPositionAt(getBlockPosition()));
+    }
+
     @Override
     public DataTransactionResult remove(Class<? extends DataManipulator<?, ?>> containerClass) {
         return getExtent().remove(getBlockPosition(), containerClass);
@@ -611,7 +721,7 @@ public final class Location<E extends Extent> implements DataHolder {
     }
 
     /**
-     * Get a snapshot of this block at the current point in time.
+     * Gets a snapshot of this block at the current point in time.
      *
      * <p>A snapshot is disconnected from the {@link Extent} that it was taken
      * from so changes to the original block do not affect the snapshot.</p>
@@ -678,7 +788,7 @@ public final class Location<E extends Extent> implements DataHolder {
 
     @Override
     public DataContainer toContainer() {
-        final DataContainer container = new MemoryDataContainer();
+        final DataContainer container = DataContainer.createNew();
         container.set(Queries.CONTENT_VERSION, getContentVersion());
         if (getExtent() instanceof World) {
             container.set(Queries.WORLD_NAME, ((World) getExtent()).getName());
@@ -793,7 +903,7 @@ public final class Location<E extends Extent> implements DataHolder {
     }
 
     @Override
-    public DataHolder copy() {
+    public Location<E> copy() {
         return new Location<>(getExtent(), getPosition());
     }
 

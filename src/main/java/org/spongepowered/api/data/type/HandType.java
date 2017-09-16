@@ -25,13 +25,15 @@
 package org.spongepowered.api.data.type;
 
 import org.spongepowered.api.CatalogType;
-import org.spongepowered.api.entity.living.Living;
+import org.spongepowered.api.entity.Entity;
+import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.translation.Translatable;
 import org.spongepowered.api.util.annotation.CatalogedBy;
 
 /**
- * Represents a hand of a {@link Living} entity. This usually specifies the hand
- * used for interactions, such as tool use or block placing/breaking.
+ * Represents the type of hand used for interaction. This will be resolved into
+ * a {@link HandPreference} based on an {@link Entity}'s/{@link Player}'s hand
+ * preference.
  */
 @CatalogedBy(HandTypes.class)
 public interface HandType extends CatalogType, Translatable {

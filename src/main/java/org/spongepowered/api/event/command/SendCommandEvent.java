@@ -29,12 +29,12 @@ import org.spongepowered.api.event.Cancellable;
 import org.spongepowered.api.event.Event;
 
 /**
- * Fired when a command is sent
+ * Fired when a command is sent.
  */
 public interface SendCommandEvent extends Event, Cancellable {
 
     /**
-     * Get the command as a string, without any sort of command prefix.
+     * Gets the command as a string, without any sort of command prefix.
      *
      * <p>For example, if the message was {@code /example bob 3 -f}, then
      * the command would be {@code example}.</p>
@@ -44,7 +44,7 @@ public interface SendCommandEvent extends Event, Cancellable {
     String getCommand();
 
     /**
-     * Set the command as a string, without any sort of command prefix.
+     * Sets the command as a string, without any sort of command prefix.
      *
      * <p>For example, if the message was {@code /example bob 3 -f}, then
      * the command would be {@code example}.</p>
@@ -54,7 +54,7 @@ public interface SendCommandEvent extends Event, Cancellable {
     void setCommand(String command);
 
     /**
-     * Get the arguments as a string.
+     * Gets the arguments as a string.
      *
      * <p>For example, if the message was {@code /example bob 3 -f}, then
      * the arguments would be {@code bob 3 -f}.</p>
@@ -64,7 +64,7 @@ public interface SendCommandEvent extends Event, Cancellable {
     String getArguments();
 
     /**
-     * Set the arguments as a string.
+     * Sets the arguments as a string.
      *
      * <p>For example, if the message was {@code /example bob 3 -f}, then
      * the arguments would be {@code bob 3 -f}.</p>

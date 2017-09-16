@@ -24,6 +24,8 @@
  */
 package org.spongepowered.api.service.pagination;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.channel.MessageChannel;
@@ -36,14 +38,15 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 
 /**
- * Represents an immutable iterable of {@link Text}s, which can be sent to a {@link MessageReceiver}.
+ * Represents an immutable iterable of {@link Text}s, which can be sent to
+ * a {@link MessageReceiver}.
  *
  * <p>An instance of this class may be obtained using {@link Builder}.</p>
  */
 public interface PaginationList {
 
     /**
-     * Creates a new {@link Builder} to build a pagination list
+     * Creates a new {@link Builder} to build a pagination list.
      *
      * @return The new builder
      */
@@ -66,18 +69,19 @@ public interface PaginationList {
     Optional<Text> getTitle();
 
     /**
-     * Gets the header to be displayed for this output on all pages after the title bar but before the contents,
-     * if available.
+     * Gets the header to be displayed for this output on all pages after the
+     * title bar but before the contents, if available.
      *
-     * Header and footer will use this Text's style and color for formatting.
+     * <p>Header and footer will use this Text's style and color for
+     * formatting.</p>
      *
      * @return The header to be displayed
      */
     Optional<Text> getHeader();
 
     /**
-     * Gets the footer to be displayed for this output on all pages after the contents and page navigation bar,
-     * if available.
+     * Gets the footer to be displayed for this output on all pages after the
+     * contents and page navigation bar, if available.
      *
      * @return The footer
      */
@@ -91,26 +95,62 @@ public interface PaginationList {
     Text getPadding();
 
     /**
-     * Get the maxinum number of lines that can be displayed on a source's screen.
+     * Gets the maximum amount of lines that will be sent per page.
      *
-     * @return The maximum number of lines per page
+     * <p>This defaults to the maximum amount of lines that can be displayed
+     * on a source's screen at one time if not specified.</p>
+     *
+     * @return The maximum amount of lines that will be sent per page
      */
     int getLinesPerPage();
 
     /**
-     * Send the constructed pagination list to the given source.
+     * Sends the first page of the constructed pagination list
+     * to the specified message receiver.
      *
-     * @param source The source to send to
+     * @param receiver The receiver to send the first page to
+     * @see PaginationList#sendTo(MessageReceiver, int) to send a specific page
      */
-    void sendTo(MessageReceiver source);
+    default void sendTo(MessageReceiver receiver) {
+        sendTo(receiver, 1);
+    }
 
     /**
-     * Send the constructed pagination list to the specified {@link MessageChannel}.
-     * @param channel
+     * Send the specified page of the constructed pagination list
+     * to the specified message receiver.
+     *
+     * <p>A page that is out of bounds will result in a friendly
+     * error message being sent to the receiver.</p>
+     *
+     * <p>Pages start at an index of 1.</p>
+     *
+     * @param receiver The receiver to send the page to
+     * @param page The page to send, starting at an index of 1
      */
-    default void sendTo(MessageChannel channel) {
-        for (MessageReceiver receiver : channel.getMembers()) {
-            this.sendTo(receiver);
+    void sendTo(MessageReceiver receiver, int page);
+
+    /**
+     * Sends the first page of the constructed pagination list to
+     * all {@link MessageReceiver}s within an {@link Iterable}.
+     *
+     * @param receivers The message receivers to send the first page to
+     * @see PaginationList#sendTo(Iterable, int) to send a specific page
+     */
+    default void sendTo(Iterable<MessageReceiver> receivers) {
+        sendTo(receivers, 1);
+    }
+
+    /**
+     * Sends the specified page of the constructed pagination list
+     * all {@link MessageReceiver}s within an {@link Iterable}.
+     *
+     * @param receivers The message receivers to send the page to
+     * @param page The page to send
+     */
+    default void sendTo(Iterable<MessageReceiver> receivers, int page) {
+        checkNotNull(receivers, "The iterable of receivers cannot be null!");
+        for (MessageReceiver receiver : receivers) {
+            sendTo(receiver, page);
         }
     }
 
@@ -120,68 +160,79 @@ public interface PaginationList {
     interface Builder extends ResettableBuilder<PaginationList, Builder> {
 
         /**
-         * Set the contents of this output as an Iterable.
-         * If this {@link Iterable} is a {@link List}, bidirectional navigation is supported.
-         * Otherwise, only going to the next page will be supported
+         * Sets the contents of this output as an iterable.
+         *
+         * <p>If this {@link Iterable} is a {@link List}, bidirectional
+         * navigation is supported. Otherwise, only going to the next page will
+         * be supported.</p>
          *
          * @param contents The contents to output
-         * @return this
+         * @return This builder
          */
         Builder contents(Iterable<Text> contents);
 
         /**
-         * Set the contents of this output to be the given array of contents.
+         * Sets the contents of this output to be the given array of contents.
          *
          * @param contents The contents to output
-         * @return this
+         * @return This builder
          */
         Builder contents(Text... contents);
 
         /**
-         * Set the title text to be used in the title bar of this pagination.
-         * This should be less than one line long.
+         * Sets the title text to be used in the title bar of this pagination.
          *
-         * @param title The title to use.
-         * @return this
+         * <p>This should be less than one line long.</p>
+         *
+         * @param title The title to use
+         * @return This builder
          */
-        Builder title(Text title);
+        Builder title(@Nullable Text title);
 
         /**
-         * Set the header to be displayed for this output on all pages after the title bar but before the contents
-         * Header and footer will use this Text's style and color for formatting.
+         * Sets the header to be displayed for this output on all pages after
+         * the title bar but before the contents.
          *
-         * <p>If the header is not specified, or passed in as <code>null</code>, it will
-         * be omitted when displaying the list.</p>
+         * <p>The header and footer will use this Text's style and color for
+         * formatting.</p>
+         *
+         * <p>If the header is not specified, or passed in as <code>null</code>,
+         * it will be omitted when displaying the list.</p>
          *
          * @param header The header to set
-         * @return this
+         * @return This builder
          */
         Builder header(@Nullable Text header);
 
         /**
-         * Set the footer to be displayed for this output on all pages after the contents and page navigation bar.
+         * Sets the footer to be displayed for this output on all pages after
+         * the contents and page navigation bar.
          *
-         * <p>If the footer is not specified, or passed in as <code>null</code>, it will
-         * be omitted when displaying the list.</p>
+         * <p>If the footer is not specified, or passed in as <code>null</code>,
+         * it will be omitted when displaying the list.</p>
          *
          * @param footer The footer to set
-         * @return this
+         * @return This builder
          */
         Builder footer(@Nullable Text footer);
 
         /**
-         * Set the padding character to be used when centering headers and footers.
+         * Sets the padding character to be used when centering headers and
+         * footers.
          *
          * @param padding The padding to use
-         * @return this
+         * @return This builder
          */
         Builder padding(Text padding);
 
         /**
-         * Set the maximum number of lines that can be displayed per page.
+         * Sets the maximum number of lines that can be displayed per page.
          *
-         * @param linesPerPage The number of lines
-         * @return this
+         * <p>This defaults to the maximum amount of lines that can be displayed
+         * on a source's screen at one time if not specified.</p>
+         *
+         * @param linesPerPage The maximum number of lines to display per page
+         * @return This builder
          */
         Builder linesPerPage(int linesPerPage);
 
@@ -189,28 +240,36 @@ public interface PaginationList {
          * Creates a {@link PaginationList} from this pagination builder.
          *
          * @return The pagination list
+         * @throws IllegalStateException If no contents were specified
          */
         PaginationList build();
 
         /**
-         * Send the constructed pagination list to the given receiver.
+         * Sends the constructed pagination list to the given receiver.
          *
-         * @param receiver The receiver to send to
+         * @param receiver The receiver to send the list to
+         * @return The constructed pagination list
          */
-        default void sendTo(MessageReceiver receiver) {
-            build().sendTo(receiver);
+        default PaginationList sendTo(MessageReceiver receiver) {
+            final PaginationList list = build();
+            list.sendTo(receiver);
+            return list;
         }
 
         /**
-         * Send the constructed pagination list to the specified {@link MessageChannel}.
-         * @param channel
+         * Sends the constructed pagination list to all
+         * {@link MessageReceiver}s within an {@link Iterable}.
+         *
+         * @param receivers The message receivers to send the list to
+         * @return The constructed pagination list
          */
-        default void sendTo(MessageChannel channel) {
-            channel.getMembers().forEach(this::sendTo);
-        }
-
-        default void sendTo(Iterable<MessageReceiver> receivers) {
-            receivers.forEach(this::sendTo);
+        default PaginationList sendTo(Iterable<MessageReceiver> receivers) {
+            checkNotNull(receivers, "The iterable of receivers cannot be null!");
+            final PaginationList list = build();
+            for (MessageReceiver r : receivers) {
+                list.sendTo(r);
+            }
+            return list;
         }
 
     }

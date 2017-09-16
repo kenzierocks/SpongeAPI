@@ -26,81 +26,9 @@ package org.spongepowered.api.data.manipulator.catalog;
 
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.data.manipulator.DataManipulator;
-import org.spongepowered.api.data.manipulator.mutable.DisplayNameData;
-import org.spongepowered.api.data.manipulator.mutable.DyeableData;
-import org.spongepowered.api.data.manipulator.mutable.FireworkEffectData;
-import org.spongepowered.api.data.manipulator.mutable.FireworkRocketData;
-import org.spongepowered.api.data.manipulator.mutable.PotionEffectData;
-import org.spongepowered.api.data.manipulator.mutable.RepresentedItemData;
-import org.spongepowered.api.data.manipulator.mutable.TargetedLocationData;
-import org.spongepowered.api.data.manipulator.mutable.WetData;
-import org.spongepowered.api.data.manipulator.mutable.entity.AchievementData;
-import org.spongepowered.api.data.manipulator.mutable.entity.AgeableData;
-import org.spongepowered.api.data.manipulator.mutable.entity.AgentData;
-import org.spongepowered.api.data.manipulator.mutable.entity.AggressiveData;
-import org.spongepowered.api.data.manipulator.mutable.entity.AngerableData;
-import org.spongepowered.api.data.manipulator.mutable.entity.ArtData;
-import org.spongepowered.api.data.manipulator.mutable.entity.BodyPartRotationalData;
-import org.spongepowered.api.data.manipulator.mutable.entity.BreathingData;
-import org.spongepowered.api.data.manipulator.mutable.entity.BreedableData;
-import org.spongepowered.api.data.manipulator.mutable.entity.CareerData;
-import org.spongepowered.api.data.manipulator.mutable.entity.ChargedData;
-import org.spongepowered.api.data.manipulator.mutable.entity.CriticalHitData;
-import org.spongepowered.api.data.manipulator.mutable.entity.DamageableData;
-import org.spongepowered.api.data.manipulator.mutable.entity.DamagingData;
-import org.spongepowered.api.data.manipulator.mutable.entity.DominantHandData;
-import org.spongepowered.api.data.manipulator.mutable.entity.ElderData;
-import org.spongepowered.api.data.manipulator.mutable.entity.ExpOrbData;
-import org.spongepowered.api.data.manipulator.mutable.entity.ExperienceHolderData;
-import org.spongepowered.api.data.manipulator.mutable.entity.ExpirableData;
-import org.spongepowered.api.data.manipulator.mutable.entity.ExplosionRadiusData;
-import org.spongepowered.api.data.manipulator.mutable.entity.FallingBlockData;
-import org.spongepowered.api.data.manipulator.mutable.entity.FlyingData;
-import org.spongepowered.api.data.manipulator.mutable.entity.FoodData;
-import org.spongepowered.api.data.manipulator.mutable.entity.FuseData;
-import org.spongepowered.api.data.manipulator.mutable.entity.GameModeData;
-import org.spongepowered.api.data.manipulator.mutable.entity.GlowingData;
-import org.spongepowered.api.data.manipulator.mutable.entity.GriefingData;
-import org.spongepowered.api.data.manipulator.mutable.entity.HealthData;
-import org.spongepowered.api.data.manipulator.mutable.entity.HorseData;
-import org.spongepowered.api.data.manipulator.mutable.entity.IgniteableData;
-import org.spongepowered.api.data.manipulator.mutable.entity.InvisibilityData;
-import org.spongepowered.api.data.manipulator.mutable.entity.JoinData;
-import org.spongepowered.api.data.manipulator.mutable.entity.KnockbackData;
-import org.spongepowered.api.data.manipulator.mutable.entity.LeashData;
-import org.spongepowered.api.data.manipulator.mutable.entity.MinecartBlockData;
-import org.spongepowered.api.data.manipulator.mutable.entity.OcelotData;
-import org.spongepowered.api.data.manipulator.mutable.entity.PassengerData;
-import org.spongepowered.api.data.manipulator.mutable.entity.PersistingData;
-import org.spongepowered.api.data.manipulator.mutable.entity.PigSaddleData;
-import org.spongepowered.api.data.manipulator.mutable.entity.PlayerCreatedData;
-import org.spongepowered.api.data.manipulator.mutable.entity.PlayingData;
-import org.spongepowered.api.data.manipulator.mutable.entity.RabbitData;
-import org.spongepowered.api.data.manipulator.mutable.entity.RespawnLocationData;
-import org.spongepowered.api.data.manipulator.mutable.entity.ScreamingData;
-import org.spongepowered.api.data.manipulator.mutable.entity.ShatteringData;
-import org.spongepowered.api.data.manipulator.mutable.entity.ShearedData;
-import org.spongepowered.api.data.manipulator.mutable.entity.SilentData;
-import org.spongepowered.api.data.manipulator.mutable.entity.SittingData;
-import org.spongepowered.api.data.manipulator.mutable.entity.SizeData;
-import org.spongepowered.api.data.manipulator.mutable.entity.SkeletonData;
-import org.spongepowered.api.data.manipulator.mutable.entity.SleepingData;
-import org.spongepowered.api.data.manipulator.mutable.entity.SlimeData;
-import org.spongepowered.api.data.manipulator.mutable.entity.SneakingData;
-import org.spongepowered.api.data.manipulator.mutable.entity.StatisticData;
-import org.spongepowered.api.data.manipulator.mutable.entity.TameableData;
-import org.spongepowered.api.data.manipulator.mutable.entity.VehicleData;
-import org.spongepowered.api.data.manipulator.mutable.entity.VelocityData;
-import org.spongepowered.api.data.manipulator.mutable.entity.VillagerZombieData;
-import org.spongepowered.api.data.type.Art;
-import org.spongepowered.api.data.type.DyeColor;
-import org.spongepowered.api.data.type.HandType;
-import org.spongepowered.api.data.type.HorseColor;
-import org.spongepowered.api.data.type.HorseStyle;
-import org.spongepowered.api.data.type.HorseVariant;
-import org.spongepowered.api.data.type.OcelotType;
-import org.spongepowered.api.data.type.RabbitType;
-import org.spongepowered.api.data.type.SkeletonType;
+import org.spongepowered.api.data.manipulator.mutable.*;
+import org.spongepowered.api.data.manipulator.mutable.entity.*;
+import org.spongepowered.api.data.type.*;
 import org.spongepowered.api.effect.potion.PotionEffect;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.ExperienceOrb;
@@ -118,10 +46,10 @@ import org.spongepowered.api.entity.living.Humanoid;
 import org.spongepowered.api.entity.living.Living;
 import org.spongepowered.api.entity.living.Villager;
 import org.spongepowered.api.entity.living.animal.Animal;
-import org.spongepowered.api.entity.living.animal.Horse;
 import org.spongepowered.api.entity.living.animal.Ocelot;
 import org.spongepowered.api.entity.living.animal.Pig;
 import org.spongepowered.api.entity.living.animal.Rabbit;
+import org.spongepowered.api.entity.living.animal.RideableHorse;
 import org.spongepowered.api.entity.living.animal.Sheep;
 import org.spongepowered.api.entity.living.animal.Wolf;
 import org.spongepowered.api.entity.living.golem.IronGolem;
@@ -129,25 +57,22 @@ import org.spongepowered.api.entity.living.monster.Blaze;
 import org.spongepowered.api.entity.living.monster.Creeper;
 import org.spongepowered.api.entity.living.monster.Enderman;
 import org.spongepowered.api.entity.living.monster.Endermite;
-import org.spongepowered.api.entity.living.monster.Guardian;
 import org.spongepowered.api.entity.living.monster.MagmaCube;
-import org.spongepowered.api.entity.living.monster.Skeleton;
 import org.spongepowered.api.entity.living.monster.Slime;
 import org.spongepowered.api.entity.living.monster.Zombie;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.entity.living.player.gamemode.GameMode;
-import org.spongepowered.api.entity.projectile.arrow.Arrow;
 import org.spongepowered.api.entity.projectile.EyeOfEnder;
 import org.spongepowered.api.entity.projectile.Firework;
 import org.spongepowered.api.entity.projectile.Projectile;
 import org.spongepowered.api.entity.projectile.Snowball;
+import org.spongepowered.api.entity.projectile.arrow.Arrow;
 import org.spongepowered.api.entity.vehicle.minecart.Minecart;
 import org.spongepowered.api.item.FireworkEffect;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.merchant.TradeOffer;
 import org.spongepowered.api.statistic.Statistic;
-import org.spongepowered.api.statistic.achievement.Achievement;
 import org.spongepowered.api.world.weather.Weather;
 
 /**
@@ -156,11 +81,6 @@ import org.spongepowered.api.world.weather.Weather;
  */
 public final class CatalogEntityData {
 
-    /**
-     * The {@link AchievementData} class that can be applied to
-     * {@link Player}s.
-     */
-    public static final Class<AchievementData> ACHIEVEMENT_DATA = AchievementData.class;
     /**
      * The {@link AgeableData} that represents age determining whether an
      * {@link Entity} is a child or an adult. Always exists for
@@ -236,7 +156,7 @@ public final class CatalogEntityData {
      */
     public static final Class<DisplayNameData> DISPLAY_NAME_DATA = DisplayNameData.class;
     /**
-     * Represents the dominant {@link HandType} used by an entity for for "main"
+     * Represents the dominant {@link HandPreference} used by an entity for for "main"
      * interactions such as such as tool use or block breaking. Usually
      * applicable to {@link Living} entities.
      */
@@ -246,11 +166,6 @@ public final class CatalogEntityData {
      * Usually applies to {@link Sheep}.
      */
     public static final Class<DyeableData> DYEABLE_DATA = DyeableData.class;
-    /**
-     * Signifies that an entity is considered an "elder". Usually applies to
-     * {@link Guardian}s.
-     */
-    public static final Class<ElderData> ELDER_DATA = ElderData.class;
     /**
      * Signifies that an entity can hold "experience". Usually applies to
      * {@link Player}s.
@@ -308,6 +223,11 @@ public final class CatalogEntityData {
      */
     public static final Class<GlowingData> GLOWING_DATA = GlowingData.class;
     /**
+     * Signifies that an entity will ignore gravity. Usually applies to all
+     * known types of entities.
+     */
+    public static final Class<GravityData> GRAVITY_DATA = GravityData.class;
+    /**
      * Signifies that an entity can modify blocks in the world. Usually applies
      * to {@link Enderman} and {@link Humanoid}s.
      */
@@ -318,8 +238,8 @@ public final class CatalogEntityData {
      */
     public static final Class<HealthData> HEALTH_DATA = HealthData.class;
     /**
-     * Represents a {@link Horse}s specific data, such as {@link HorseVariant},
-     * {@link HorseStyle}, and {@link HorseColor}.
+     * Represents a {@link RideableHorse}s specific data, such as {@link HorseStyle},
+     * and {@link HorseColor}.
      */
     public static final Class<HorseData> HORSE_DATA = HorseData.class;
     /**
@@ -440,10 +360,6 @@ public final class CatalogEntityData {
      */
     public static final Class<SizeData> SIZE_DATA = SizeData.class;
     /**
-     * Represents the {@link SkeletonType} of a {@link Skeleton}.
-     */
-    public static final Class<SkeletonData> SKELETON_DATA = SkeletonData.class;
-    /**
      * Signifies that the owner is currently "sleeping". This will usually
      * apply to {@link Humanoid}s and {@link Bat}s.
      */
@@ -459,14 +375,13 @@ public final class CatalogEntityData {
      */
     public static final Class<SneakingData> SNEAKING_DATA = SneakingData.class;
     /**
-     * Represents the container of all known applied {@link Statistic}s and
-     * {@link Achievement}s. Usually applicable to {@link Player}s and
-     * {@link User}s.
+     * Represents the container of all known applied {@link Statistic}s. Usually
+     * applicable to {@link Player}s and {@link User}s.
      */
     public static final Class<StatisticData> STATISTIC_DATA = StatisticData.class;
     /**
      * Signifies that an entity is "tamed" and has an owner. Usually applicable
-     * to {@link Horse}s, {@link Ocelot}s, and {@link Wolf} entities.
+     * to {@link RideableHorse}s, {@link Ocelot}s, and {@link Wolf} entities.
      */
     public static final Class<TameableData> TAMEABLE_DATA = TameableData.class;
     /**
@@ -479,11 +394,6 @@ public final class CatalogEntityData {
      * {@link Entity}.
      */
     public static final Class<VelocityData> VELOCITY_DATA = VelocityData.class;
-    /**
-     * Signifies that a {@link Zombie} is a "villager" zombie. Usually
-     * applicable to all {@link Zombie}s.
-     */
-    public static final Class<VillagerZombieData> VILLAGER_ZOMBIE_DATA = VillagerZombieData.class;
     /**
      * Signifies that an entity is currently "wet". Usually applicable to
      * {@link Wolf} entities.

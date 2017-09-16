@@ -27,6 +27,7 @@ package org.spongepowered.api.data;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -36,12 +37,13 @@ import org.spongepowered.api.data.value.BaseValue;
 import org.spongepowered.api.data.value.immutable.ImmutableValue;
 import org.spongepowered.api.data.value.mutable.CompositeValueStore;
 import org.spongepowered.api.data.value.mutable.Value;
-import org.spongepowered.api.event.data.ChangeDataHolderEvent;
 import org.spongepowered.api.util.ResettableBuilder;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * Represents a transaction taking place where a {@link DataHolder} is
@@ -272,7 +274,7 @@ public final class DataTransactionResult {
 
 
     /**
-     * Get the type of result.
+     * Gets the type of result.
      *
      * @return the type of result
      */
@@ -320,14 +322,75 @@ public final class DataTransactionResult {
         return this.replaced;
     }
 
+    /**
+     * If this result of {@link #isSuccessful()} returns {@code true},
+     * the provided {@link Consumer} is called provided a list of all
+     * "successful" data as retrieved from {@link #getSuccessfulData()}.
+     *
+     * @param consumer The consumer to call
+     */
+    public void ifSuccessful(Consumer<List<ImmutableValue<?>>> consumer) {
+        if (isSuccessful()) {
+            consumer.accept(this.success);
+        }
+    }
+
+    /**
+     * If this result of {@link #isSuccessful()} returns {@code true},
+     * the provided {@link Consumer} is called provided a list of all
+     * "successful" data as retrieved from {@link #getSuccessfulData()}.
+     *
+     * @param consumer The consumer to call
+     * @deprecated Use {@link #ifSuccessful(Consumer)} instead
+     */
+    @Deprecated
+    public void ifSucessful(Consumer<List<ImmutableValue<?>>> consumer) {
+        ifSuccessful(consumer);
+    }
+
+    /**
+     * Used to call a {@link Supplier} for an {@link Exception} of type
+     * {@code E} such that if this transaction's {@link #isSuccessful()}
+     * returns {@code false}, the supplier's exception is thrown.
+     *
+     * @param supplier The supplier of the exception to throw
+     * @param <E> The type of exception
+     * @throws E The exception to throw if this transaction is not successful
+     */
+    public <E extends Exception> void ifNotSuccessful(Supplier<E> supplier) throws E {
+        if (!isSuccessful()) {
+            throw supplier.get();
+        }
+    }
+
     @Override
     public String toString() {
-        return Objects.toStringHelper(this)
+        return MoreObjects.toStringHelper(this)
                 .add("resultType", this.type)
                 .add("rejectedData", this.rejected)
                 .add("replacedData", this.replaced)
                 .add("successfulData", this.success)
                 .toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        DataTransactionResult that = (DataTransactionResult) o;
+        return this.type == that.type
+               && Objects.equal(this.rejected, that.rejected)
+               && Objects.equal(this.replaced, that.replaced)
+               && Objects.equal(this.success, that.success);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(this.type, this.rejected, this.replaced, this.success);
     }
 
     /**

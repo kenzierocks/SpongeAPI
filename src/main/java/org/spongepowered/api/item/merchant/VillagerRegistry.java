@@ -29,13 +29,11 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 import org.spongepowered.api.data.type.Career;
-import org.spongepowered.api.util.GuavaCollectors;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Random;
-import java.util.stream.Collectors;
 
 public interface VillagerRegistry {
 
@@ -121,17 +119,17 @@ public interface VillagerRegistry {
      * Generates a new {@link List} of {@link TradeOffer}s based on the
      * provided {@link Career}, {@code level}, and {@link Random}.
      *
+     * @param merchant The merchant
      * @param career The career
      * @param level The level
      * @param random The random
      * @return The generated list of trade offers
      */
-    default Collection<TradeOffer> generateTradeOffers(Career career, int level, Random random) {
+    default Collection<TradeOffer> generateTradeOffers(Merchant merchant, Career career, int level, Random random) {
         checkNotNull(random, "Random cannot be null!");
         List<TradeOffer> generatedList = new ArrayList<>();
         this.getMutatorsForCareer(career, level)
-                .stream()
-                .forEach(mutator -> mutator.accept(generatedList,random));
+                .forEach(mutator -> mutator.accept(merchant, generatedList, random));
         return generatedList;
     }
 
@@ -142,15 +140,16 @@ public interface VillagerRegistry {
      * {@link TradeOfferListMutator}s registered for the desired level
      * and {@link Career}, the list remains unmodified.
      *
+     * @param merchant The merchant
      * @param currentOffers The current offers
      * @param career The career
      * @param level The level
      * @param random The random to use
      * @return The list of offers modified
      */
-    default List<TradeOffer> populateOffers(List<TradeOffer> currentOffers, Career career, int level, Random random) {
+    default List<TradeOffer> populateOffers(Merchant merchant, List<TradeOffer> currentOffers, Career career, int level, Random random) {
         this.getMutatorsForCareer(career, level)
-                .forEach(mutator -> mutator.accept(currentOffers, random));
+                .forEach(mutator -> mutator.accept(merchant, currentOffers, random));
         return currentOffers;
     }
 

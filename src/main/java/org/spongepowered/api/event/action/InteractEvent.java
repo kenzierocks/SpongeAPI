@@ -38,6 +38,8 @@ public interface InteractEvent extends Event, Cancellable {
     /**
      * Gets the point of interaction where the interaction occurred as
      * a {@link Vector3d}.
+     * 
+     * @return The interaction point if available
      */
-   Optional<Vector3d> getInteractionPoint();
+    Optional<Vector3d> getInteractionPoint();
 }

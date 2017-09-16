@@ -25,46 +25,40 @@
 package org.spongepowered.api.service;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mockito;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
-import org.spongepowered.api.Sponge;
 import org.spongepowered.api.event.EventManager;
 import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.plugin.PluginManager;
+import org.spongepowered.api.util.test.TestHooks;
 
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(Sponge.class)
 public class SimpleServiceManagerTest {
 
-    private final PluginManager manager = Mockito.mock(PluginManager.class);
-    private final Object testPlugin = new Object();
-    private final PluginContainer testPluginContainer = Mockito.mock(PluginContainer.class);
-    private final EventManager testEventManager = Mockito.mock(EventManager.class);
+    private PluginManager manager;
+    private Object testPlugin = new Object();
+    private PluginContainer testPluginContainer;
 
-    {
-        Mockito.when(testPluginContainer.getId()).thenReturn("TestPlugin");
-        Mockito.when(manager.fromInstance(testPlugin)).thenReturn(Optional.of(testPluginContainer));
+    @Before
+    public void mockEventManager() throws Exception {
+        this.manager = mock(PluginManager.class);
+        this.testPluginContainer = mock(PluginContainer.class);
+        when(this.testPluginContainer.getId()).thenReturn("TestPlugin");
+        when(this.manager.fromInstance(this.testPlugin)).thenReturn(Optional.of(this.testPluginContainer));
+
+        TestHooks.setInstance("eventManager", mock(EventManager.class));
     }
 
     @Test
     public void testRegisterService() {
-        PowerMockito.mockStatic(Sponge.class);
-        PowerMockito.when(Sponge.getEventManager()).thenReturn(testEventManager);
+        SimpleServiceManager serviceManager = new SimpleServiceManager(this.manager);
 
-        SimpleServiceManager serviceManager = new SimpleServiceManager(manager);
-
-        serviceManager.setProvider(testPlugin, TestInterface.class, new TestImplCow());
+        serviceManager.setProvider(this.testPlugin, TestInterface.class, new TestImplCow());
 
         Optional<TestInterface> returned = serviceManager.provide(TestInterface.class);
         assertTrue(returned.isPresent());
@@ -75,31 +69,25 @@ public class SimpleServiceManagerTest {
 
     @Test
     public void testDuplicateRegistrationAllowed() {
-        PowerMockito.mockStatic(Sponge.class);
-        PowerMockito.when(Sponge.getEventManager()).thenReturn(testEventManager);
-
-        SimpleServiceManager serviceManager = new SimpleServiceManager(manager);
-        serviceManager.setProvider(testPlugin, TestInterface.class, new TestImplCow());
-        serviceManager.setProvider(testPlugin, TestInterface.class, new TestImplDog());
+        SimpleServiceManager serviceManager = new SimpleServiceManager(this.manager);
+        serviceManager.setProvider(this.testPlugin, TestInterface.class, new TestImplCow());
+        serviceManager.setProvider(this.testPlugin, TestInterface.class, new TestImplDog());
 
         assertEquals("woof", serviceManager.provideUnchecked(TestInterface.class).bark());
     }
 
     @Test
     public void testGetProviderRegistration() {
-        PowerMockito.mockStatic(Sponge.class);
-        PowerMockito.when(Sponge.getEventManager()).thenReturn(testEventManager);
-
         TestImplCow testImplCow = new TestImplCow();
 
-        SimpleServiceManager serviceManager = new SimpleServiceManager(manager);
-        serviceManager.setProvider(testPlugin, TestInterface.class, testImplCow);
+        SimpleServiceManager serviceManager = new SimpleServiceManager(this.manager);
+        serviceManager.setProvider(this.testPlugin, TestInterface.class, testImplCow);
 
         ProviderRegistration<TestInterface> registration = serviceManager.getRegistration(TestInterface.class).get();
 
         assertEquals(TestInterface.class, registration.getService());
         assertEquals(testImplCow, registration.getProvider());
-        assertEquals(testPluginContainer, registration.getPlugin());
+        assertEquals(this.testPluginContainer, registration.getPlugin());
     }
 
     public interface TestInterface {

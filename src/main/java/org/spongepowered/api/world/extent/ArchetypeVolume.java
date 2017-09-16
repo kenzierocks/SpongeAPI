@@ -44,8 +44,10 @@ public interface ArchetypeVolume extends MutableBlockVolume {
      * Applies this archetype at the given location. The archetype will be
      * mapped onto the given world such that the origin on the archetype lines
      * up with the given position.
+     *
      * @param location The location to apply at
-     * @param changeFlag The flag to use for toggling various operations on block placement
+     * @param changeFlag The flag to use for toggling various operations on
+     *     block placement
      * @param cause The cause of the changes
      */
     void apply(Location<World> location, BlockChangeFlag changeFlag, Cause cause);
@@ -73,7 +75,7 @@ public interface ArchetypeVolume extends MutableBlockVolume {
     }
 
     /**
-     * Gets a map containing all tile entitiy archetypes within this volume,
+     * Gets a map containing all tile entity archetypes within this volume,
      * keyed by their positions within the volume.
      * 
      * @return The tile entity map

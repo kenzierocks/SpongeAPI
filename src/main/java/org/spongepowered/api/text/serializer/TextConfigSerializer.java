@@ -27,11 +27,12 @@ package org.spongepowered.api.text.serializer;
 import com.google.common.reflect.TypeToken;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.gson.GsonConfigurationLoader;
+import ninja.leaping.configurate.loader.HeaderMode;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializer;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.data.DataContainer;
 import org.spongepowered.api.data.DataView;
-import org.spongepowered.api.data.MemoryDataContainer;
 import org.spongepowered.api.data.Queries;
 import org.spongepowered.api.data.persistence.AbstractDataBuilder;
 import org.spongepowered.api.data.persistence.InvalidDataException;
@@ -55,6 +56,10 @@ import java.util.Optional;
  */
 public class TextConfigSerializer extends AbstractDataBuilder<Text> implements TypeSerializer<Text> {
 
+    /**
+     * Creates a new {@link TextConfigSerializer}. Normally this should not
+     * need to be created more than once.
+     */
     public TextConfigSerializer() {
         super(Text.class, 1);
     }
@@ -63,16 +68,11 @@ public class TextConfigSerializer extends AbstractDataBuilder<Text> implements T
     public Text deserialize(TypeToken<?> type, ConfigurationNode value) throws ObjectMappingException {
         StringWriter writer = new StringWriter();
 
-        // TODO: Disable writing config headers in configurate 3.2
         GsonConfigurationLoader gsonLoader = GsonConfigurationLoader.builder()
                 .setIndent(0)
                 .setSink(() -> new BufferedWriter(writer))
+                .setHeaderMode(HeaderMode.NONE)
                 .build();
-
-        // Set the configuration node to a new empty value to remove headers in
-        // the configuration node
-        // TODO: Remove this with configurate 3.2
-        value = gsonLoader.createEmptyNode().setValue(value);
 
         try {
             gsonLoader.save(value);
@@ -80,7 +80,7 @@ public class TextConfigSerializer extends AbstractDataBuilder<Text> implements T
             throw new ObjectMappingException(e);
         }
 
-        return Sponge.getDataManager().deserialize(Text.class, new MemoryDataContainer().set(Queries.JSON, writer.toString())).get();
+        return Sponge.getDataManager().deserialize(Text.class, DataContainer.createNew().set(Queries.JSON, writer.toString())).get();
     }
 
     @Override

@@ -33,7 +33,6 @@ import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.data.DataHolder;
-import org.spongepowered.api.data.DataSerializable;
 import org.spongepowered.api.data.DataView;
 import org.spongepowered.api.data.key.Key;
 import org.spongepowered.api.data.manipulator.DataManipulator;
@@ -41,8 +40,8 @@ import org.spongepowered.api.data.manipulator.ImmutableDataManipulator;
 import org.spongepowered.api.data.persistence.DataBuilder;
 import org.spongepowered.api.data.value.BaseValue;
 import org.spongepowered.api.item.ItemType;
+import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.text.translation.Translatable;
-import org.spongepowered.api.util.ResettableBuilder;
 
 import java.util.Map;
 import java.util.Set;
@@ -53,11 +52,11 @@ import java.util.function.Predicate;
  * Represents a stack of a specific {@link ItemType}. Supports serialization and
  * can be compared using the comparators listed in {@link ItemStackComparators}.
  *
- * <p>{@link ItemStack}s have varying properties and data, it is adviseable to
- * use {@link DataHolder#get(Class)} to retrieve different information
- * regarding this item stack.</p>
+ * <p>{@link ItemStack}s have a variety of properties and data. It is advised to
+ * use {@link DataHolder#get(Class)} in order to retrieve information regarding
+ * this item stack.</p>
  */
-public interface ItemStack extends DataHolder, DataSerializable, Translatable {
+public interface ItemStack extends DataHolder, Translatable {
 
     /**
      * Creates a new {@link Builder} to build an {@link ItemStack}.
@@ -80,13 +79,32 @@ public interface ItemStack extends DataHolder, DataSerializable, Translatable {
         return builder().itemType(itemType).quantity(quantity).build();
     }
 
+    /**
+     * Returns an empty {@link ItemStack}
+     *
+     * @return The empty ItemStack
+     */
+    static ItemStack empty() {
+        return builder().itemType(ItemTypes.NONE).build();
+    }
+
+    /**
+     * Gets the {@link ItemType} of this {@link ItemStack}.
+     *
+     * @return The item type
+     * @deprecated Use {@link #getType()}
+     */
+    @Deprecated
+    default ItemType getItem() {
+        return getType();
+    }
 
     /**
      * Gets the {@link ItemType} of this {@link ItemStack}.
      *
      * @return The item type
      */
-    ItemType getItem();
+    ItemType getType();
 
     /**
      * Gets the quantity of items in this stack. This may exceed the max stack
@@ -107,7 +125,7 @@ public interface ItemStack extends DataHolder, DataSerializable, Translatable {
     void setQuantity(int quantity) throws IllegalArgumentException;
 
     /**
-     * Get the maximum quantity per stack. By default, returns
+     * Gets the maximum quantity per stack. By default, returns
      * {@link ItemType#getMaxStackQuantity()}, unless a
      * different value has been set for this specific stack.
      *
@@ -137,9 +155,19 @@ public interface ItemStack extends DataHolder, DataSerializable, Translatable {
      */
     boolean equalTo(ItemStack that);
 
+    /**
+     * Returns true if {@link #getQuantity()} is zero and therefore this
+     * ItemStack is empty.
+     *
+     * <p>In Vanilla empty ItemStacks are not rendered by the client.</p>
+     *
+     * @return True if this ItemStack is empty
+     */
+    boolean isEmpty();
+
     @Override
     ItemStack copy();
-    
+
     interface Builder extends DataBuilder<ItemStack> {
 
         @Override
@@ -160,7 +188,8 @@ public interface ItemStack extends DataHolder, DataSerializable, Translatable {
          *
          * @param quantity The quantity of the item stack
          * @return This builder, for chaining
-         * @throws IllegalArgumentException If the quantity is outside the allowed bounds
+         * @throws IllegalArgumentException If the quantity is outside the
+         *      allowed bounds
          */
         Builder quantity(int quantity) throws IllegalArgumentException;
 
@@ -184,7 +213,8 @@ public interface ItemStack extends DataHolder, DataSerializable, Translatable {
          *
          * @param itemData The item data to set
          * @return This builder, for chaining
-         * @throws IllegalArgumentException If the item data is incompatible with the item
+         * @throws IllegalArgumentException If the item data is incompatible
+         *      with the item
          */
         Builder itemData(DataManipulator<?, ?> itemData) throws IllegalArgumentException;
 
@@ -226,7 +256,7 @@ public interface ItemStack extends DataHolder, DataSerializable, Translatable {
          */
         default Builder fromBlockState(BlockState blockState) {
             checkNotNull(blockState);
-            final BlockType blockType= blockState.getType();
+            final BlockType blockType = blockState.getType();
             checkArgument(blockType.getItem().isPresent(), "Missing valid ItemType for BlockType: " + blockType.getId());
             itemType(blockType.getItem().get());
             blockState.getContainers().forEach(this::itemData);
@@ -279,6 +309,6 @@ public interface ItemStack extends DataHolder, DataSerializable, Translatable {
          * @return A new instance of an ItemStack
          * @throws IllegalStateException If the item stack is not completed
          */
-        ItemStack build() throws IllegalStateException;        
+        ItemStack build() throws IllegalStateException;
     }
 }

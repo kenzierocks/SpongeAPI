@@ -25,49 +25,9 @@
 package org.spongepowered.api.item.inventory.entity;
 
 import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.item.inventory.Slot;
-import org.spongepowered.api.item.inventory.crafting.CraftingInventory;
-import org.spongepowered.api.item.inventory.equipment.EquipmentInventory;
-import org.spongepowered.api.item.inventory.type.CarriedInventory;
-import org.spongepowered.api.item.inventory.type.GridInventory;
 
 /**
- * Represents the inventory of a Humanoid or Player. Implementors of this interface
- * guarantee that (at a minimum) the following subinventory types can be queried
- * for:
- *
- * <ul><li>
- *   {@link CraftingInventory}
- * </li></ul>
+ * Represents the inventory of a Humanoid or Player.
  */
-public interface PlayerInventory extends CarriedInventory<Player> {
-
-    /**
-     * Gets the hotbar inventory.
-     *
-     * @return the hotbar
-     */
-    Hotbar getHotbar();
-
-    /**
-     * Gets the main inventory.
-     *
-     * @return the hotbar
-     */
-    GridInventory getMain();
-
-    /**
-     * Gets the equipment inventory.
-     *
-     * @return the hotbar
-     */
-    EquipmentInventory getEquipment();
-
-    /**
-     * Gets the offhand inventory.
-     *
-     * @return the hotbar
-     */
-    Slot getOffhand();
-
+public interface PlayerInventory extends UserInventory<Player> {
 }
